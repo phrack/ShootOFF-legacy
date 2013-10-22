@@ -18,8 +18,9 @@ from target_pickler import TargetPickler
 from training_protocols.protocol_operations import ProtocolOperations
 import sys
 from threading import Thread
-import Tkinter
+import Tkinter, tkMessageBox
 
+FEED_FPS = 30 #ms
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -36,6 +37,14 @@ class MainWindow:
         # Threshold the image
         (thresh, frame_thresh) = cv2.threshold(frame_bw, 230, 255,
             cv2.THRESH_BINARY)
+	
+        # Determine if we have a light source or glare on the feed
+        if not self._seen_interference:
+            self.detect_interfence(frame_thresh)     
+        elif self._show_interference:
+            if self._interference_iterations > 0:
+                self._interference_iterations -= 1
+                webcam_frame = frame_thresh 
 
         # Find min and max values on the black and white frame
         min_max = cv2.minMaxLoc(frame_thresh)
@@ -49,28 +58,10 @@ class MainWindow:
             new_shot = Shot((x, y))
             self._shots.append(new_shot)
 
-            if self._loaded_training != None: 
-                self._loaded_training.shot_listener(new_shot)
-
-            regions = self._webcam_canvas.find_overlapping(x, y, x, y)
-
-            # If we hit a targer region, run its commands and notify the
-            # loaded plugin of the hit
-            for region in reversed(regions):
-                tags = TagParser.parse_tags(
-                    self._webcam_canvas.gettags(region))
-
-                if "_internal_name" in tags and "command" in tags:
-                    self.execute_region_commands(tags["command"])
-
-                if "_internal_name" in tags and self._loaded_training != None:
-                    self._loaded_training.hit_listener(region, tags)
-
-                if "_internal_name" in tags:
-                    # only run the commands and notify a hit for the top most
-                    # region
-                    break
-
+            # Process the shot to see if we hit a region and perform
+            # a training protocol specific action and any if we did
+            # command tag actions if we did
+            self.process_hit(new_shot)
 
         for shot in self._shots:
             shot.draw_marker(webcam_frame)                
@@ -105,7 +96,54 @@ class MainWindow:
                 self._webcam_canvas.tag_lower(target)
 
         if self._shutdown == False:
-            self._window.after(30, self.refresh_frame)
+            self._window.after(FEED_FPS, self.refresh_frame)
+
+    def detect_interfence(self, image_thresh):
+        brightness_hist = cv2.calcHist([image_thresh],[0],None,[256],[0,255])
+        percent_dark =  brightness_hist[0] / image_thresh.size
+
+        # If 99% of thresholded image isn't dark, we probably have
+        # a light source or glare in the image
+        if (percent_dark < .99):
+            # We will only warn about interference once each run
+            self._seen_interference = True
+
+            logging.warning(
+                "Glare or light source detected. %f of the image is dark." %
+                percent_dark)
+
+            self._show_interference = tkMessageBox.askyesno("Interference Detected", "Bright glare or a light source has been detected on the webcam feed, which will interfere with shot detection. Do you want to see a feed where the interference will be white and everything else will be black for a short period of time?") 
+
+            if self._show_interference:
+                # calculate the number of times we should show the 
+                # interference image (this should be roughly 5 seconds)
+                self._interference_iterations = 2500 / FEED_FPS    
+
+    def process_hit(self, shot):
+        if self._loaded_training != None: 
+            self._loaded_training.shot_listener(shot)
+
+        x = shot.get_coords()[0]
+        y = shot.get_coords()[1]
+
+        regions = self._webcam_canvas.find_overlapping(x, y, x, y)
+
+        # If we hit a targer region, run its commands and notify the
+        # loaded plugin of the hit
+        for region in reversed(regions):
+            tags = TagParser.parse_tags(
+                self._webcam_canvas.gettags(region))
+
+            if "_internal_name" in tags and "command" in tags:
+                self.execute_region_commands(tags["command"])
+
+            if "_internal_name" in tags and self._loaded_training != None:
+                self._loaded_training.hit_listener(region, tags)
+
+            if "_internal_name" in tags:
+                # only run the commands and notify a hit for the top most
+                # region
+                break
 
     def open_target_editor(self):
         TargetEditor(self._frame, self._editor_image, 
@@ -291,6 +329,8 @@ class MainWindow:
         self._show_targets = True
         self._selected_target = ""
         self._loaded_training = None
+        self._seen_interference = False
+        self._show_interference = False
 
         self._cv = cv2.VideoCapture(0)
 
