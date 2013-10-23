@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 class ITrainingProtocol():
-    def __init__(self, canvas):
+    def __init__(self, protocol_operations, targets):
         # Called when the training protocol is loaded. Initialize the training
         # protocol here.
         pass
