@@ -9,7 +9,7 @@ class ShootForScore(ITrainingProtocol):
 	self._operations = protocol_operations
         self._score = 0
 
-    def shot_listener(self, shot):
+    def shot_listener(self, shot, is_hit):
         return
 
     def hit_listener(self, region, tags):
@@ -38,5 +38,5 @@ def get_info():
 
     return protocol_info
 
-def load(canvas):
-    return ShootForScore(canvas)
+def load(protocol_operations, targets):
+    return ShootForScore(protocol_operations, targets)

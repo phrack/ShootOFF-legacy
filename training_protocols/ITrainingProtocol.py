@@ -8,9 +8,9 @@ class ITrainingProtocol():
         # protocol here.
         pass
 
-    def shot_listener(self, shot):
+    def shot_listener(self, shot, is_hit):
         # Called whenever a shot is detected. The shot may not have hit
-        # a target.
+        # a target: is_hit will be False for a miss or True for a hit 
         pass
 
     def hit_listener(self, region, tags):
@@ -38,5 +38,5 @@ def get_info():
 
     return protocol_info
 
-def load(canvas):
-    return ITrainingProtocol(canvas)
+def load(protocol_operations, targets):
+    return ITrainingProtocol(protocol_operations, targets)

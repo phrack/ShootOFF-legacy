@@ -120,15 +120,14 @@ class MainWindow:
                 self._interference_iterations = 2500 / FEED_FPS    
 
     def process_hit(self, shot):
-        if self._loaded_training != None: 
-            self._loaded_training.shot_listener(shot)
+        is_hit = False
 
         x = shot.get_coords()[0]
         y = shot.get_coords()[1]
 
         regions = self._webcam_canvas.find_overlapping(x, y, x, y)
 
-        # If we hit a targer region, run its commands and notify the
+        # If we hit a targert region, run its commands and notify the
         # loaded plugin of the hit
         for region in reversed(regions):
             tags = TagParser.parse_tags(
@@ -141,9 +140,13 @@ class MainWindow:
                 self._loaded_training.hit_listener(region, tags)
 
             if "_internal_name" in tags:
+                is_hit = True
                 # only run the commands and notify a hit for the top most
                 # region
                 break
+
+        if self._loaded_training != None: 
+            self._loaded_training.shot_listener(shot, is_hit)
 
     def open_target_editor(self):
         TargetEditor(self._frame, self._editor_image, 
@@ -229,8 +232,26 @@ class MainWindow:
             self._loaded_training = None
     
     def load_training(self, plugin):
+        # Create a list of targets, their regions, and the tags attached
+        # to those regions so that the plugin can have a stock of what
+        # can be shot
+        targets = [] 
+
+        for target in self._targets:
+            target_regions = self._webcam_canvas.find_withtag(target)
+            target_data = {"name":target, "regions":[]}
+            targets.append(target_data)
+
+            for region in target_regions:
+                tags = TagParser.parse_tags(
+                    self._webcam_canvas.gettags(region))
+                target_data["regions"].append(tags)
+
+        if self._loaded_training:
+            self._loaded_training.destroy()
+
         self._loaded_training = imp.load_module("__init__", *plugin).load(
-            ProtocolOperations(self._webcam_canvas))       
+            ProtocolOperations(self._webcam_canvas), targets)       
 
     def build_gui(self, feed_dimensions=(600,600)):
         # Create the main window

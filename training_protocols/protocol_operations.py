@@ -15,6 +15,8 @@ class ProtocolOperations():
         self._plugin_canvas_artifacts.append(self._feed_text)
 
         self._tts_engine = pyttsx.init()
+        # slow down the wpm rate otherwise they speek to fast
+        self._tts_engine.setProperty("rate", 150)
 
     # Use text-to-speech to say message outloud
     def say(self, message):
@@ -25,7 +27,8 @@ class ProtocolOperations():
                 name="say_thread")
         self._say_thread.start()  
     
-    def _say(self, *args): 
+    def _say(self, *args):
+        print args[0]
         self._tts_engine.say(args[0])
         self._tts_engine.runAndWait()
 
@@ -38,3 +41,4 @@ class ProtocolOperations():
     def clear_canvas(self):
         for artifact in self._plugin_canvas_artifacts:
             self._canvas.delete(artifact)
+
