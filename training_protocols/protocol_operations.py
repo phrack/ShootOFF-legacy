@@ -17,6 +17,7 @@ class ProtocolOperations():
         self._tts_engine = pyttsx.init()
         # slow down the wpm rate otherwise they speek to fast
         self._tts_engine.setProperty("rate", 150)
+        self._tts_engine.startLoop(False)
 
     # Use text-to-speech to say message outloud
     def say(self, message):
@@ -28,9 +29,8 @@ class ProtocolOperations():
         self._say_thread.start()  
     
     def _say(self, *args):
-        print args[0]
         self._tts_engine.say(args[0])
-        self._tts_engine.runAndWait()
+        self._tts_engine.iterate()
 
     # Show message as text on the top left corner of the webcam feed. The 
     # new message will over-write whatever was shown before
