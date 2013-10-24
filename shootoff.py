@@ -24,6 +24,7 @@ import Tkinter, tkMessageBox
 FEED_FPS = 30 #ms
 SHOT_DETECTION_RATE = 70 #ms
 LASER_INTENSITY_THRESHOLD = 230
+MARKER_RADIUS = 2
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -106,7 +107,7 @@ class MainWindow:
             x = min_max[3][0]
             y = min_max[3][1]
 
-            new_shot = Shot((x, y))
+            new_shot = Shot((x, y), MARKER_RADIUS)
             self._shots.append(new_shot)
 
             # Process the shot to see if we hit a region and perform
@@ -401,12 +402,52 @@ class MainWindow:
     def main(self):
         Tkinter.mainloop()
 
+def check_rate(rate):
+    value = int(rate)
+    if value < 1:
+        raise argparse.ArgumentTypeError("DETECTION_RATE must be a number " +
+            "greater than 0")
+    return value  
+
+def check_intensity(intensity):
+    value = int(intensity)
+    if value < 0 or value > 255:
+        raise argparse.ArgumentTypeError("LASER_INTENSITY must be a number " +
+            "between 0 and 255")
+    return value   
+
+def check_radius(radius):
+    value = int(radius)
+    if value < 1 or value > 20:
+        raise argparse.ArgumentTypeError("MARKER_RADIUS must be a number " +
+            "between 1 and 20")
+    return value  
+
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(prog="shootoff.py")
     parser.add_argument("-d", "--debug", action="store_true", 
-        help="Turn on debug log message")
+        help="turn on debug log messages")
+    parser.add_argument("-r", "--detection-rate", type=check_rate,
+        help="sets the rate at which shots are detected in milliseconds. " +
+            "this should be set to about the length of time your laser trainer " +
+            "stays on for each shot, typically about 100 ms")
+    parser.add_argument("-i", "--laser-intensity", type=check_intensity, 
+        help="sets the intensity threshold for detecting the laser [0,255]. " +
+            "this should be as high as you can set it while still detecting " +
+            "shots")
+    parser.add_argument("-m", "--marker-radius", type=check_radius,
+        help="sets the radius of shot markers in pixels [1,20]")
     args = parser.parse_args()
+
+    if args.detection_rate:
+        SHOT_DETECTION_RATE = args.detection_rate
+
+    if args.laser_intensity:
+        LASER_INTENSITY_THRESHOLD = args.laser_intensity
+
+    if args.marker_radius:
+        MARKER_RADIUS = args.marker_radius
 
     # Configure logging
     logger = logging.getLogger('shootoff')
