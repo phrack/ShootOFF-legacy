@@ -8,6 +8,7 @@ from training_protocols.ITrainingProtocol import ITrainingProtocol
 class RandomShoot(ITrainingProtocol):
     def __init__(self, protocol_operations, targets):
         self._operations = protocol_operations
+        self._subtarget_chain = None
         self._subtargets = []
 
         found_target = False
@@ -49,12 +50,18 @@ class RandomShoot(ITrainingProtocol):
             self._subtarget_chain[self._subtarget_index])
 
     def shot_listener(self, shot, is_hit):
+        if not self._subtarget_chain:
+            return
+
         if not is_hit:
             self.say_current_subtarget()
 
         return
 
     def hit_listener(self, region, tags):
+        if not self._subtarget_chain:
+            return
+
         if tags["subtarget"] == self._subtarget_chain[self._subtarget_index]:
             self._subtarget_index += 1
 

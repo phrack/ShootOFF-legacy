@@ -249,9 +249,11 @@ class MainWindow:
 
         if self._loaded_training:
             self._loaded_training.destroy()
-
+            self._protocol_operations.destroy()
+    
+        self._protocol_operations = ProtocolOperations(self._webcam_canvas)
         self._loaded_training = imp.load_module("__init__", *plugin).load(
-            ProtocolOperations(self._webcam_canvas), targets)       
+            self._protocol_operations, targets)       
 
     def build_gui(self, feed_dimensions=(600,600)):
         # Create the main window

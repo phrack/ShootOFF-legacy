@@ -22,7 +22,7 @@ class ShootForScore(ITrainingProtocol):
 	self._operations.show_text_on_feed("score: 0")
 
     def destroy(self):
-        self._operations.clear_canvas()
+        pass
 
 def get_info():
     protocol_info = {}

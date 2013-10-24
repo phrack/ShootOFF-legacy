@@ -19,6 +19,10 @@ class ProtocolOperations():
         self._tts_engine.setProperty("rate", 150)
         self._tts_engine.startLoop(False)
 
+    def destroy(self):
+        self._tts_engine.endLoop()
+        self.clear_canvas()
+
     # Use text-to-speech to say message outloud
     def say(self, message):
         # if we don't do this on a nother thread we have to wait until
@@ -41,4 +45,3 @@ class ProtocolOperations():
     def clear_canvas(self):
         for artifact in self._plugin_canvas_artifacts:
             self._canvas.delete(artifact)
-
