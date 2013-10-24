@@ -21,60 +21,42 @@ from threading import Thread
 import Tkinter, tkMessageBox
 
 FEED_FPS = 30 #ms
+SHOT_DETECTION_RATE = 70 #ms
+LASER_INTENSITY_THRESHOLD = 230
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
     def refresh_frame(self, *args):
-        rval, webcam_frame = self._cv.read()
+        rval, self._webcam_frame = self._cv.read()
 
         if (rval == False):
             logger.critical("The webcam has been disconnected.")
+            self._shutdown = True
             return
 
-        # Makes feed black and white
-        frame_bw = cv2.cvtColor(webcam_frame, cv2.cv.CV_BGR2GRAY)
+        for shot in self._shots:
+            shot.draw_marker(self._webcam_frame)  
 
-        # Threshold the image
-        (thresh, frame_thresh) = cv2.threshold(frame_bw, 230, 255,
-            cv2.THRESH_BINARY)
-	
-        # Determine if we have a light source or glare on the feed
-        if not self._seen_interference:
-            self.detect_interfence(frame_thresh)     
-        elif self._show_interference:
+        webcam_image = self._webcam_frame
+
+        # If the shot detector saw interference, we need to show it now
+        if self._show_interference:
             if self._interference_iterations > 0:
                 self._interference_iterations -= 1
-                webcam_frame = frame_thresh 
 
-        # Find min and max values on the black and white frame
-        min_max = cv2.minMaxLoc(frame_thresh)
-
-        # The minimum and maximum are the same if there was
-        # nothing detected
-        if (min_max[0] != min_max[1]):
-            x = min_max[3][0]
-            y = min_max[3][1]
-
-            new_shot = Shot((x, y))
-            self._shots.append(new_shot)
-
-            # Process the shot to see if we hit a region and perform
-            # a training protocol specific action and any if we did
-            # command tag actions if we did
-            self.process_hit(new_shot)
-
-        for shot in self._shots:
-            shot.draw_marker(webcam_frame)                
+                frame_bw = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2GRAY)
+                (thresh, webcam_image) = cv2.threshold(frame_bw,
+                    LASER_INTENSITY_THRESHOLD, 255, cv2.THRESH_BINARY)             
 
         # Show webcam image a Tk image container (note:
         # if the image isn't stored in an instance variable
         # it will be garbage collected and not show)
-        self._image = ImageTk.PhotoImage(image=Image.fromarray(webcam_frame))
+        self._image = ImageTk.PhotoImage(image=Image.fromarray(webcam_image))
 
         # If the target editor doesn't have its own copy of the image
         # the webcam feed will never update again after the editor opens
         self._editor_image = ImageTk.PhotoImage(
-            image=Image.fromarray(webcam_frame))
+            image=Image.fromarray(webcam_image))
 
         webcam_image = self._webcam_canvas.create_image(0, 0, image=self._image,
             anchor=Tkinter.NW, tags=("background"))
@@ -97,6 +79,42 @@ class MainWindow:
 
         if self._shutdown == False:
             self._window.after(FEED_FPS, self.refresh_frame)
+
+    def detect_shots(self):
+        if (self._webcam_frame is None):
+            self._window.after(SHOT_DETECTION_RATE, self.detect_shots)
+            return
+
+        # Makes feed black and white
+        frame_bw = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2GRAY)
+
+        # Threshold the image
+        (thresh, frame_thresh) = cv2.threshold(frame_bw, LASER_INTENSITY_THRESHOLD,
+            255, cv2.THRESH_BINARY)
+	
+        # Determine if we have a light source or glare on the feed
+        if not self._seen_interference:
+            self.detect_interfence(frame_thresh)     
+
+        # Find min and max values on the black and white frame
+        min_max = cv2.minMaxLoc(frame_thresh)
+
+        # The minimum and maximum are the same if there was
+        # nothing detected
+        if (min_max[0] != min_max[1]):
+            x = min_max[3][0]
+            y = min_max[3][1]
+
+            new_shot = Shot((x, y))
+            self._shots.append(new_shot)
+
+            # Process the shot to see if we hit a region and perform
+            # a training protocol specific action and any if we did
+            # command tag actions if we did
+            self.process_hit(new_shot)
+
+        if self._shutdown == False:
+            self._window.after(SHOT_DETECTION_RATE, self.detect_shots)
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh],[0],None,[256],[0,255])
@@ -354,6 +372,7 @@ class MainWindow:
         self._loaded_training = None
         self._seen_interference = False
         self._show_interference = False
+        self._webcam_frame = None
 
         self._cv = cv2.VideoCapture(0)
 
@@ -362,11 +381,18 @@ class MainWindow:
             height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
             self.build_gui((width, height))
 
-            #Start the refresh loop that shows the webcam feed
-            self._shutdown = False           
+            # Webcam related threads will end when this is true
+            self._shutdown = False
+
+            #Start the refresh loop that shows the webcam feed           
             self._refresh_thread = Thread(target=self.refresh_frame,
                 name="refresh_thread")
             self._refresh_thread.start()
+
+            #Start the shot detection loop
+            self._shot_detection_thread = Thread(target=self.detect_shots,
+                name="shot_detection_thread")
+            self._shot_detection_thread.start()
         else:
             logger.critical("Video capturing could not be initialized either because there is no webcam or we cannot connect to it.")
 
