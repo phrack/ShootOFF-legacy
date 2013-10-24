@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 from canvas_manager import CanvasManager
 import cv2
 import glob
@@ -379,6 +380,7 @@ class MainWindow:
         if self._cv.isOpened():
             width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
             height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
+            logger.debug("Webcam width = %d, height = %d", width, height) 
             self.build_gui((width, height))
 
             # Webcam related threads will end when this is true
@@ -400,13 +402,24 @@ class MainWindow:
         Tkinter.mainloop()
 
 if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(prog="shootoff.py")
+    parser.add_argument("-d", "--debug", action="store_true", 
+        help="Turn on debug log message")
+    args = parser.parse_args()
+
+    # Configure logging
     logger = logging.getLogger('shootoff')
     stdhandler = logging.StreamHandler(sys.stdout)
-    stdhandler.setLevel(logging.DEBUG)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     stdhandler.setFormatter(formatter)
     logger.addHandler(stdhandler)
 
+    # Start the main window
     mainWindow = MainWindow()
     mainWindow.main()
