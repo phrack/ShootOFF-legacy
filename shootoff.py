@@ -13,6 +13,7 @@ import imp
 import logging
 import os
 from PIL import Image, ImageTk
+from preferences_editor import PreferencesEditor
 from shot import Shot
 from tag_parser import TagParser
 from target_editor import TargetEditor
@@ -277,6 +278,10 @@ class MainWindow:
         self._loaded_training = imp.load_module("__init__", *plugin).load(
             self._protocol_operations, targets)       
 
+    def edit_preferences(self):
+        preferences_editor = PreferencesEditor(self._window, self._config,
+            self._preferences)
+
     def build_gui(self, feed_dimensions=(600,600)):
         # Create the main window
         self._window = Tkinter.Tk()
@@ -308,6 +313,8 @@ class MainWindow:
         self._window.config(menu=menu_bar)
     
         file_menu = Tkinter.Menu(menu_bar, tearoff=False)
+        file_menu.add_command(label="Preferences", command=self.edit_preferences)
+        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
         menu_bar.add_cascade(label="File", menu=file_menu)
 
