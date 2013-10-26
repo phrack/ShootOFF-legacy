@@ -440,20 +440,33 @@ def map_configuration():
     config.read("settings.conf")
     preferences = {}    
 
-    try:
-        preferences[DETECTION_RATE] = config.getint("ShootOFF", DETECTION_RATE)
-    except ConfigParser.NoOptionError:
+    if os.path.exists("settings.conf"):
+        try:
+            preferences[DETECTION_RATE] = config.getint("ShootOFF", DETECTION_RATE)
+        except ConfigParser.NoOptionError:
+            preferences[DETECTION_RATE] = 70
+
+        try:
+            preferences[LASER_INTENSITY] = config.getint("ShootOFF", LASER_INTENSITY)
+        except ConfigParser.NoOptionError:
+            preferences[LASER_INTENSITY] = 230
+
+        try:
+            preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
+        except ConfigParser.NoOptionError:
+            preferences[MARKER_RADIUS] = 2
+    else:
         preferences[DETECTION_RATE] = 70
-
-    try:
-        preferences[LASER_INTENSITY] = config.getint("ShootOFF", LASER_INTENSITY)
-    except ConfigParser.NoOptionError:
         preferences[LASER_INTENSITY] = 230
-
-    try:
-        preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
-    except ConfigParser.NoOptionError:
         preferences[MARKER_RADIUS] = 2
+
+        config.add_section("ShootOFF")
+        config.set("ShootOFF", DETECTION_RATE, str(preferences[DETECTION_RATE]))   
+        config.set("ShootOFF", LASER_INTENSITY, str(preferences[LASER_INTENSITY]))
+        config.set("ShootOFF", MARKER_RADIUS, str(preferences[MARKER_RADIUS]))     
+
+        with open("settings.conf", "w") as config_file:
+            config.write(config_file)
 
     return config, preferences
 
