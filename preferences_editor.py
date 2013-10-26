@@ -4,8 +4,6 @@ DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
 
-#TODO: validate settings
-
 class PreferencesEditor():
     def save_preferences(self):
         self._preferences[DETECTION_RATE] = int(self._detection_rate_spinbox.get())
