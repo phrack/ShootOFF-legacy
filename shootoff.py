@@ -6,6 +6,7 @@
 
 import argparse
 from canvas_manager import CanvasManager
+import ConfigParser
 import cv2
 import glob
 import imp
@@ -22,9 +23,9 @@ from threading import Thread
 import Tkinter, tkMessageBox
 
 FEED_FPS = 30 #ms
-SHOT_DETECTION_RATE = 70 #ms
-LASER_INTENSITY_THRESHOLD = 230
-MARKER_RADIUS = 2
+DETECTION_RATE = "detectionrate" #ms
+LASER_INTENSITY = "laserintensity"
+MARKER_RADIUS = "markerradius"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -48,7 +49,8 @@ class MainWindow:
 
                 frame_bw = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2GRAY)
                 (thresh, webcam_image) = cv2.threshold(frame_bw,
-                    LASER_INTENSITY_THRESHOLD, 255, cv2.THRESH_BINARY)             
+                    self._preferences[LASER_INTENSITY], 255,
+                    cv2.THRESH_BINARY)             
 
         # Show webcam image a Tk image container (note:
         # if the image isn't stored in an instance variable
@@ -84,15 +86,15 @@ class MainWindow:
 
     def detect_shots(self):
         if (self._webcam_frame is None):
-            self._window.after(SHOT_DETECTION_RATE, self.detect_shots)
+            self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
             return
 
         # Makes feed black and white
         frame_bw = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2GRAY)
 
         # Threshold the image
-        (thresh, frame_thresh) = cv2.threshold(frame_bw, LASER_INTENSITY_THRESHOLD,
-            255, cv2.THRESH_BINARY)
+        (thresh, frame_thresh) = cv2.threshold(frame_bw, 
+            self._preferences[LASER_INTENSITY], 255, cv2.THRESH_BINARY)
 	
         # Determine if we have a light source or glare on the feed
         if not self._seen_interference:
@@ -107,7 +109,7 @@ class MainWindow:
             x = min_max[3][0]
             y = min_max[3][1]
 
-            new_shot = Shot((x, y), MARKER_RADIUS)
+            new_shot = Shot((x, y), self._preferences[MARKER_RADIUS])
             self._shots.append(new_shot)
 
             # Process the shot to see if we hit a region and perform
@@ -116,7 +118,7 @@ class MainWindow:
             self.process_hit(new_shot)
 
         if self._shutdown == False:
-            self._window.after(SHOT_DETECTION_RATE, self.detect_shots)
+            self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh],[0],None,[256],[0,255])
@@ -366,7 +368,7 @@ class MainWindow:
                 command=self.callback_factory(self.load_training, plugin_info),
                 variable=self._training_selection, value=training_info["name"])
 
-    def __init__(self):
+    def __init__(self, config, preferences):
         self._shots = []
         self._targets = []
         self._show_targets = True
@@ -375,6 +377,8 @@ class MainWindow:
         self._seen_interference = False
         self._show_interference = False
         self._webcam_frame = None
+        self._config = config
+        self._preferences = preferences
 
         self._cv = cv2.VideoCapture(0)
 
@@ -397,7 +401,8 @@ class MainWindow:
                 name="shot_detection_thread")
             self._shot_detection_thread.start()
         else:
-            logger.critical("Video capturing could not be initialized either because there is no webcam or we cannot connect to it.")
+            logger.critical("Video capturing could not be initialized either " +
+                "because there is no webcam or we cannot connect to it.")
 
     def main(self):
         Tkinter.mainloop()
@@ -423,7 +428,33 @@ def check_radius(radius):
             "between 1 and 20")
     return value  
 
+def map_configuration():
+    config = ConfigParser.SafeConfigParser()
+    config.read("settings.conf")
+    preferences = {}    
+
+    try:
+        preferences[DETECTION_RATE] = config.getint("ShootOFF", DETECTION_RATE)
+    except ConfigParser.NoOptionError:
+        preferences[DETECTION_RATE] = 70
+
+    try:
+        preferences[LASER_INTENSITY] = config.getint("ShootOFF", LASER_INTENSITY)
+    except ConfigParser.NoOptionError:
+        preferences[LASER_INTENSITY] = 230
+
+    try:
+        preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
+    except ConfigParser.NoOptionError:
+        preferences[MARKER_RADIUS] = 2
+
+    return config, preferences
+
 if __name__ == "__main__":
+    # Load configuration information from the config file, which will
+    # be over-ridden if settings are set on the command line
+    config, preferences = map_configuration()
+
     # Parse command line arguments
     parser = argparse.ArgumentParser(prog="shootoff.py")
     parser.add_argument("-d", "--debug", action="store_true", 
@@ -441,13 +472,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.detection_rate:
-        SHOT_DETECTION_RATE = args.detection_rate
+        preferences[DETECTION_RATE] = args.detection_rate
 
     if args.laser_intensity:
-        LASER_INTENSITY_THRESHOLD = args.laser_intensity
+        preferences[LASER_INTENSITY] = args.laser_intensity
 
     if args.marker_radius:
-        MARKER_RADIUS = args.marker_radius
+        preferences[MARKER_RADIUS] = args.marker_radius
 
     # Configure logging
     logger = logging.getLogger('shootoff')
@@ -462,5 +493,5 @@ if __name__ == "__main__":
     logger.addHandler(stdhandler)
 
     # Start the main window
-    mainWindow = MainWindow()
+    mainWindow = MainWindow(config, preferences)
     mainWindow.main()
