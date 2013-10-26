@@ -388,6 +388,13 @@ class MainWindow:
             logger.debug("Webcam width = %d, height = %d", width, height) 
             self.build_gui((width, height))
 
+            fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
+            if fps == -1:
+                logger.info("Couldn't get webcam FPS, defaulting to 30.")
+            else: 
+                FEED_FPS = fps
+                logger.info("Feed FPS set to %d.", fps)
+
             # Webcam related threads will end when this is true
             self._shutdown = False
 
