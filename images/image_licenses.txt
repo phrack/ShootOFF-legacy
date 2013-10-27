@@ -1,0 +1,8 @@
+The following images were not created by ShootOFF contributors and have their own licenses:
+
+gnome_media_floppy.png -- GNU/GPL
+tags.png -- Freeware by Midtone Design Studios
+bring_forward.png -- LGPL
+send_backward.png -- LGPL
+
+All of these were found via https://www.iconfinder.com or http://www.findicons.com.
