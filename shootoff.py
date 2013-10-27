@@ -439,6 +439,7 @@ class MainWindow:
     def main(self):
         if not self._shutdown:
             Tkinter.mainloop()
+            self._window.destroy()
 
 def check_rate(rate):
     value = int(rate)
