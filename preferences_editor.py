@@ -53,9 +53,23 @@ class PreferencesEditor():
         return config, preferences
 
     def save_preferences(self):
-        self._preferences[DETECTION_RATE] = int(self._detection_rate_spinbox.get())
-        self._preferences[LASER_INTENSITY] = int(self._laser_intensity_spinbox.get())
-        self._preferences[MARKER_RADIUS] = int(self._marker_radius_spinbox.get())
+        if self._detection_rate_spinbox.get():
+            self._preferences[DETECTION_RATE] = int(
+                self._detection_rate_spinbox.get())
+        else:
+            self._preferences[DETECTION_RATE] = 100
+
+        if self._laser_intensity_spinbox.get():
+            self._preferences[LASER_INTENSITY] = int(
+                self._laser_intensity_spinbox.get())
+        else:
+            self._preferences[LASER_INTENSITY] = 230
+
+        if self._marker_radius_spinbox.get():
+            self._preferences[MARKER_RADIUS] = int(
+                self._marker_radius_spinbox.get())
+        else:
+            self._preferences[MARKER_RADIUS] = 2
 
         self._config.set("ShootOFF", DETECTION_RATE, 
             str(self._preferences[DETECTION_RATE]))
@@ -127,19 +141,19 @@ class PreferencesEditor():
         self._frame.pack()
 
     def check_detection_rate(self, P):
-        if P.isdigit() and int(P) > 0:
+        if (P.isdigit() and int(P) > 0) or not P:
             return True
         else:
             return False
 
     def check_laser_intensity(self, P):
-        if P.isdigit() and int(P) >= 0 and int(P) <= 255:
+        if (P.isdigit() and int(P) >= 0 and int(P) <= 255) or not P:
             return True
         else:
             return False
 
     def check_marker_radius(self, P):
-        if P.isdigit() and int(P) >= 1 and int(P) <= 20:
+        if (P.isdigit() and int(P) >= 1 and int(P) <= 20) or not P:
             return True
         else:
             return False
