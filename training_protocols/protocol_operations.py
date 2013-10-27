@@ -11,7 +11,7 @@ class ProtocolOperations():
     def __init__(self, canvas):
         self._canvas = canvas
         self._plugin_canvas_artifacts = []
-        self._feed_text = self._canvas.create_text(1, 1, anchor="nw")
+        self._feed_text = self._canvas.create_text(1, 1, anchor="nw", fill="white")
         self._plugin_canvas_artifacts.append(self._feed_text)
 
         self._tts_engine = pyttsx.init()
