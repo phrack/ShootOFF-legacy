@@ -14,13 +14,12 @@ class TargetPickler():
             region_fill = canvas.itemcget(region, "fill")
             region_tags = canvas.gettags(region)
 	
-
             region_object.append({"tags":region_tags,
                 "coords":region_coords,
                 "fill":region_fill})
 
         target = open(target_file, 'wb')
-        pickle.dump(region_object, target)
+        pickle.dump(region_object, target, pickle.HIGHEST_PROTOCOL)
         target.close()
 
     # the target_name is set on every region in a target
