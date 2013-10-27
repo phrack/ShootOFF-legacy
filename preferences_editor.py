@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import ConfigParser
+import os
 import Tkinter
 
 DETECTION_RATE = "detectionrate" #ms
@@ -9,6 +11,47 @@ LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
 
 class PreferencesEditor():
+    @staticmethod
+    def map_configuration():
+        config = ConfigParser.SafeConfigParser()
+        config.read("settings.conf")
+        preferences = {}    
+
+        if os.path.exists("settings.conf"):
+            try:
+                preferences[DETECTION_RATE] = config.getint("ShootOFF",
+                    DETECTION_RATE)
+            except ConfigParser.NoOptionError:
+                preferences[DETECTION_RATE] = 150
+
+            try:
+                preferences[LASER_INTENSITY] = config.getint("ShootOFF",
+                    LASER_INTENSITY)
+            except ConfigParser.NoOptionError:
+                preferences[LASER_INTENSITY] = 230
+
+            try:
+                preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
+            except ConfigParser.NoOptionError:
+                preferences[MARKER_RADIUS] = 2
+        else:
+            preferences[DETECTION_RATE] = 150
+            preferences[LASER_INTENSITY] = 230
+            preferences[MARKER_RADIUS] = 2
+
+            config.add_section("ShootOFF")
+            config.set("ShootOFF", DETECTION_RATE, 
+                str(preferences[DETECTION_RATE]))   
+            config.set("ShootOFF", LASER_INTENSITY, 
+                str(preferences[LASER_INTENSITY]))
+            config.set("ShootOFF", MARKER_RADIUS, 
+                str(preferences[MARKER_RADIUS]))     
+
+            with open("settings.conf", "w") as config_file:
+                config.write(config_file)
+
+        return config, preferences
+
     def save_preferences(self):
         self._preferences[DETECTION_RATE] = int(self._detection_rate_spinbox.get())
         self._preferences[LASER_INTENSITY] = int(self._laser_intensity_spinbox.get())
