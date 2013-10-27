@@ -43,6 +43,11 @@ class TargetPickler():
         for region in region_object:
             shape = 0
             raw_tags = region["tags"]
+    
+            # Get rid of the default internal name otherwise every target
+            # will have it and selection won't work
+            raw_tags = tuple([value for value in raw_tags if value != "_internal_name:target"])
+
             raw_tags += (internal_target_name,)
             parsed_tags = TagParser.parse_tags(raw_tags)	
 

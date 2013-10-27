@@ -175,7 +175,10 @@ class MainWindow:
             notifynewfunc=self.new_target_listener)
 
     def add_target(self, name):
-        target_name = "_internal_name:target" + str(len(self._targets))
+        # The target count is just supposed to prevent target naming collisions,
+        # not keep track of how many active targets there are
+        target_name = "_internal_name:target" + str(self._target_count)
+        self._target_count += 1
 
         target_pickler = TargetPickler()
         (region_object, regions) = target_pickler.load(
@@ -378,6 +381,7 @@ class MainWindow:
     def __init__(self, config, preferences):
         self._shots = []
         self._targets = []
+        self._target_count = 0
         self._show_targets = True
         self._selected_target = ""
         self._loaded_training = None
