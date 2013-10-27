@@ -62,7 +62,7 @@ class RandomShoot(ITrainingProtocol):
         if not self._subtarget_chain:
             return
 
-        if tags["subtarget"] == self._subtarget_chain[self._subtarget_index]:
+        if "subtarget" in tags and tags["subtarget"] == self._subtarget_chain[self._subtarget_index]:
             self._subtarget_index += 1
 
             if self._subtarget_index == len(self._subtarget_chain):
