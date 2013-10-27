@@ -391,7 +391,20 @@ class MainWindow:
         if self._cv.isOpened():
             width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
             height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
-            logger.debug("Webcam width = %d, height = %d", width, height) 
+
+            # If the resolution is too low, try to force it higher.
+            # Some users have drivers that default to extremely low
+            # resolutions and opencv doesn't currently make it easy
+            # to enumerate valid resolutions and switch to them
+            if width < 640 and height < 480:
+                logger.info("Webcam resolution is current low (%dx%d), " + 
+                    "attempting to increase it to 640x480", width, height)
+                self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 640)
+                self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
+                width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
+                height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)               
+
+            logger.debug("Webcam resolution is %dx%d", width, height) 
             self.build_gui((width, height))
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
