@@ -409,7 +409,7 @@ class MainWindow:
             self.build_gui((width, height))
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
-            if fps == -1:
+            if fps <= 0:
                 logger.info("Couldn't get webcam FPS, defaulting to 30.")
             else: 
                 FEED_FPS = fps
