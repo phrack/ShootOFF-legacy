@@ -249,8 +249,9 @@ class MainWindow:
             self._selected_target = ""
 
     def cancel_training(self):
-        if self._loaded_training is not None:
+        if self._loaded_training:
             self._loaded_training.destroy()
+            self._protocol_operations.destroy()
             self._loaded_training = None
     
     def load_training(self, plugin):
