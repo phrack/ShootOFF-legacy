@@ -22,7 +22,7 @@ class PreferencesEditor():
                 preferences[DETECTION_RATE] = config.getint("ShootOFF",
                     DETECTION_RATE)
             except ConfigParser.NoOptionError:
-                preferences[DETECTION_RATE] = 150
+                preferences[DETECTION_RATE] = 100
 
             try:
                 preferences[LASER_INTENSITY] = config.getint("ShootOFF",
@@ -35,7 +35,7 @@ class PreferencesEditor():
             except ConfigParser.NoOptionError:
                 preferences[MARKER_RADIUS] = 2
         else:
-            preferences[DETECTION_RATE] = 150
+            preferences[DETECTION_RATE] = 100
             preferences[LASER_INTENSITY] = 230
             preferences[MARKER_RADIUS] = 2
 
