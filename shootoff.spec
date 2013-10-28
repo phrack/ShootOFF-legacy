@@ -15,14 +15,19 @@ exe = EXE(pyz,
           console=False )
 
 
-# Include the training_protocols directory in the final build
-dict_tree = Tree('training_protocols', prefix = 'training_protocols')
+# Include the directories in the final build
+dict_tree1 = Tree('training_protocols', prefix = 'training_protocols')
+dict_tree2 = Tree('images', prefix = 'images')
+dict_tree3 = Tree('targets', prefix = 'targets')
+
 
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
-               dict_tree,
+               dict_tree1,
+               dict_tree2,
+               dict_tree3,
                strip=None,
                upx=True,
                name='shootoff')
