@@ -6,9 +6,13 @@ import ConfigParser
 import os
 import Tkinter
 
-DETECTION_RATE = "detectionrate" #ms
+DETECTION_RATE = "detectionrate"
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
+
+DEFAULT_DETECTION_RATE = 100 #ms
+DEFAULT_LASER_INTENSITY = 230
+DEFAULT_MARKER_RADIUS = 2 #px
 
 class PreferencesEditor():
     @staticmethod
@@ -22,22 +26,22 @@ class PreferencesEditor():
                 preferences[DETECTION_RATE] = config.getint("ShootOFF",
                     DETECTION_RATE)
             except ConfigParser.NoOptionError:
-                preferences[DETECTION_RATE] = 100
+                preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
 
             try:
                 preferences[LASER_INTENSITY] = config.getint("ShootOFF",
                     LASER_INTENSITY)
             except ConfigParser.NoOptionError:
-                preferences[LASER_INTENSITY] = 230
+                preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
 
             try:
                 preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
             except ConfigParser.NoOptionError:
-                preferences[MARKER_RADIUS] = 2
+                preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
         else:
-            preferences[DETECTION_RATE] = 100
-            preferences[LASER_INTENSITY] = 230
-            preferences[MARKER_RADIUS] = 2
+            preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
+            preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
+            preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
             config.add_section("ShootOFF")
             config.set("ShootOFF", DETECTION_RATE, 
@@ -57,19 +61,19 @@ class PreferencesEditor():
             self._preferences[DETECTION_RATE] = int(
                 self._detection_rate_spinbox.get())
         else:
-            self._preferences[DETECTION_RATE] = 100
+            self._preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
 
         if self._laser_intensity_spinbox.get():
             self._preferences[LASER_INTENSITY] = int(
                 self._laser_intensity_spinbox.get())
         else:
-            self._preferences[LASER_INTENSITY] = 230
+            self._preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
 
         if self._marker_radius_spinbox.get():
             self._preferences[MARKER_RADIUS] = int(
                 self._marker_radius_spinbox.get())
         else:
-            self._preferences[MARKER_RADIUS] = 2
+            self._preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
         self._config.set("ShootOFF", DETECTION_RATE, 
             str(self._preferences[DETECTION_RATE]))
