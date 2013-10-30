@@ -26,6 +26,7 @@ FEED_FPS = 30 #ms
 DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
+SHOT_MARKER = "shot_marker"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -36,9 +37,6 @@ class MainWindow:
             logger.critical("The webcam has been disconnected.")
             self._shutdown = True
             return
-
-        for shot in self._shots:
-            shot.draw_marker(self._webcam_frame)  
 
         webcam_image = self._webcam_frame
 
@@ -72,15 +70,17 @@ class MainWindow:
             # will cause hits to stop registering on targets
             for target in self._targets:
                 self._webcam_canvas.tag_raise(target)
+            self._webcam_canvas.tag_raise(SHOT_MARKER)
             self._webcam_canvas.tag_lower(webcam_image)
         else:
             # We have to lower canvas then the targets so 
             # that anything drawn by plugins will still show
             # but the targets won't
+            self._webcam_canvas.tag_raise(SHOT_MARKER)
             self._webcam_canvas.tag_lower(webcam_image)        
             for target in self._targets:
                 self._webcam_canvas.tag_lower(target)
-
+ 
         if self._shutdown == False:
             self._window.after(FEED_FPS, self.refresh_frame)
 
@@ -111,6 +111,7 @@ class MainWindow:
 
             new_shot = Shot((x, y), self._preferences[MARKER_RADIUS])
             self._shots.append(new_shot)
+            new_shot.draw_marker(self._webcam_canvas)
 
             # Process the shot to see if we hit a region and perform
             # a training protocol specific action and any if we did
@@ -215,6 +216,7 @@ class MainWindow:
         self._show_targets = not self._show_targets
 
     def clear_shots(self):
+        self._webcam_canvas.delete(SHOT_MARKER)
         self._shots = []
         if self._loaded_training != None:
             self._loaded_training.reset()

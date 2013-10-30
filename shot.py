@@ -10,7 +10,7 @@ class Shot:
     # (a tuple representing the coordinate of 
     # laser on the webcam feed).
     def __init__(self, coord, marker_radius=2):
-        self._marker_color = (0,255,0) # default bright green
+        self._marker_color = "green" # default bright green
         self._marker_radius = marker_radius
         self._coord = coord
 
@@ -23,6 +23,15 @@ class Shot:
     def get_coords(self):
         return self._coord
 
-    def draw_marker(self, frame):
-        cv2.circle(frame, self._coord, self._marker_radius, 
-            self._marker_color, -1)
+    def draw_marker(self, canvas):
+        x = self._coord[0]
+        y = self._coord[1]
+
+        canvas.create_oval(
+            x - self._marker_radius,
+            y - self._marker_radius,
+            x + self._marker_radius,
+            y + self._marker_radius, 
+            fill=self._marker_color, outline=self._marker_color, 
+            tags=("shot_marker"))
+
