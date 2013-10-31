@@ -10,6 +10,7 @@ import cv2
 import glob
 import imp
 import logging
+import numpy
 import os
 from PIL import Image, ImageTk
 from preferences_editor import PreferencesEditor
