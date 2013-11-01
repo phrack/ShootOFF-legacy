@@ -28,6 +28,11 @@ Ubuntu
 4. sudo python setup.py install
 5. ./shootoff.py
 
+Linux (General)
+-----------------------
+1. pip install -r requirements.txt
+2. ./shootoff.py
+
 Mac
 -----------------------
 
