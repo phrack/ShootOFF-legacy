@@ -36,10 +36,16 @@ class MainWindow:
 
         if (rval == False):
             self._refresh_miss_count += 1
-            logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF will stop processing shots.", self._refresh_miss_count)
+            logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF " +
+                "will stop processing shots.", self._refresh_miss_count)
 
             if self._refresh_miss_count >= 25:
-                logger.critical("Missed %d webcam frames. The camera is probably disconnected so ShootOFF will stop processing shots...", self._refresh_miss_count)
+                tkMessageBox.showerror("Webcam Disconnected", "Missed too many " +
+                    "webcam frames. The camera is probably disconnected so " +
+                    "ShootOFF will stop processing shots.")
+                logger.critical("Missed %d webcam frames. The camera is probably " +
+                    "disconnected so ShootOFF will stop processing shots.",
+                    self._refresh_miss_count)
                 self._shutdown = True
             else:
                 if self._shutdown == False:
@@ -446,6 +452,9 @@ class MainWindow:
                 name="shot_detection_thread")
             self._shot_detection_thread.start()
         else:
+            tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
+                "could not be initialized either because there is no webcam or " +
+                "we cannot connect to it. ShootOFF will shut down.")
             logger.critical("Video capturing could not be initialized either " +
                 "because there is no webcam or we cannot connect to it.")
             self._shutdown = True
