@@ -36,10 +36,18 @@ class MainWindow:
 
         if (rval == False):
             self._refresh_miss_count += 1
-            if self._refresh_miss_count == 1 or self._refresh_miss_count % 25 == 0:
-              logger.info("Missed " + str(self._refresh_miss_count) + " camera frames.")
-            self._window.after(FEED_FPS, self.refresh_frame)
-            return
+            logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF will stop processing shots.", self._refresh_miss_count)
+
+            if self._refresh_miss_count >= 25:
+                logger.critical("Missed %d webcam frames. The camera is probably disconnected so ShootOFF will stop processing shots...", self._refresh_miss_count)
+                self._shutdown = True
+                return
+            else:
+                if self._shutdown == False:
+                    self._window.after(FEED_FPS, self.refresh_frame)
+                return
+
+        self._refresh_miss_count = 0
 
         webcam_image = self._webcam_frame
 
