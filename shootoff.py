@@ -35,8 +35,10 @@ class MainWindow:
         rval, self._webcam_frame = self._cv.read()
 
         if (rval == False):
-            logger.critical("The webcam has been disconnected.")
-            self._shutdown = True
+            self._refresh_miss_count += 1
+            if self._refresh_miss_count == 1 or self._refresh_miss_count % 25 == 0:
+              logger.info("Missed " + str(self._refresh_miss_count) + " camera frames.")
+            self._window.after(FEED_FPS, self.refresh_frame)
             return
 
         webcam_image = self._webcam_frame
@@ -385,6 +387,7 @@ class MainWindow:
         self._shots = []
         self._targets = []
         self._target_count = 0
+        self._refresh_miss_count = 0
         self._show_targets = True
         self._selected_target = ""
         self._loaded_training = None
