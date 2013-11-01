@@ -41,11 +41,11 @@ class MainWindow:
             if self._refresh_miss_count >= 25:
                 logger.critical("Missed %d webcam frames. The camera is probably disconnected so ShootOFF will stop processing shots...", self._refresh_miss_count)
                 self._shutdown = True
-                return
             else:
                 if self._shutdown == False:
                     self._window.after(FEED_FPS, self.refresh_frame)
-                return
+                
+            return
 
         self._refresh_miss_count = 0
 
