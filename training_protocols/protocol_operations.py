@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import pyaudio
 import pyttsx
 from threading import Thread
+import wave
 
 # This class hold shootoff functions that should be exposed to training protocol
 # plugins. Each instance of a plugin has its own instance of this class.
@@ -25,7 +27,7 @@ class ProtocolOperations():
 
     # Use text-to-speech to say message outloud
     def say(self, message):
-        # if we don't do this on a nother thread we have to wait until
+        # if we don't do this on another thread we have to wait until
         # the message has finished being communicated to do anything
         # (i.e. shootoff freezes)  
         self._say_thread = Thread(target=self._say, args=(message,),
@@ -45,3 +47,34 @@ class ProtocolOperations():
     def clear_canvas(self):
         for artifact in self._plugin_canvas_artifacts:
             self._canvas.delete(artifact)
+
+    # Play the sound in sound_file
+    def play_sound(self, sound_file):
+        # if we don't do this on a nother thread we have to wait until
+        # the message has finished being communicated to do anything
+        # (i.e. shootoff freezes)  
+        self._play_sound_thread = Thread(target=self._play_sound, 
+            args=(sound_file,), name="play_sound_thread")
+        self._play_sound_thread.start()  
+
+    def _play_sound(self, *args):
+        chunk = 1024  
+  
+        # initialize the sound file and stream
+        f = wave.open(args[0],"rb")  
+        p = pyaudio.PyAudio()  
+        stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
+                        channels = f.getnchannels(),  
+                        rate = f.getframerate(),  
+                        output = True)  
+
+        # play the sound file
+        data = f.readframes(chunk)   
+        while data != '':  
+            stream.write(data)  
+            data = f.readframes(chunk)  
+
+        # clean up
+        stream.stop_stream()  
+        stream.close()  
+        p.terminate() 
