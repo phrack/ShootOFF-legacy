@@ -128,14 +128,20 @@ class MainWindow:
             x = min_max[3][0]
             y = min_max[3][1]
 
-            new_shot = Shot((x, y), self._preferences[MARKER_RADIUS])
-            self._shots.append(new_shot)
-            new_shot.draw_marker(self._webcam_canvas)
+            laser_color = self.detect_laser_color(x, y)
 
-            # Process the shot to see if we hit a region and perform
-            # a training protocol specific action and any if we did
-            # command tag actions if we did
-            self.process_hit(new_shot)
+            # If we couldn't detect a laser color, it's probably not a 
+            # shot
+            if laser_color is not None:  
+                new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
+                    laser_color)
+                self._shots.append(new_shot)
+                new_shot.draw_marker(self._webcam_canvas)
+
+                # Process the shot to see if we hit a region and perform
+                # a training protocol specific action and any if we did
+                # command tag actions if we did
+                self.process_hit(new_shot)
 
         if self._shutdown == False:
             self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
@@ -160,6 +166,30 @@ class MainWindow:
                 # calculate the number of times we should show the 
                 # interference image (this should be roughly 5 seconds)
                 self._interference_iterations = 2500 / FEED_FPS    
+
+    def detect_laser_color(self, x, y):
+        # Get the average color around the coordinates. If
+        # the dominant color is red, it's a red laser, if
+        # it's green it's a green laser, otherwise it's probably
+        # not a laser trainer, so ignore it
+        l = self._webcam_frame.shape[1]
+        h = self._webcam_frame.shape[0]
+        mask = numpy.zeros((h,l,1), numpy.uint8)
+        cv2.circle(mask, (x, y), 15, (255,255,555), -1)
+        mean_color = cv2.mean(self._webcam_frame, mask)
+
+        # Remember that self._webcam_frame is in BGR
+        r = mean_color[2]
+        g = mean_color[1]
+        b = mean_color[0]
+
+        if (r > g) and (r > b):
+            return "red"
+        
+        if (g > r) and (g > b):
+            return "green2"
+
+        return None
 
     def process_hit(self, shot):
         is_hit = False

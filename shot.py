@@ -9,8 +9,8 @@ class Shot:
     # shot marker. Create a new shoot at coord
     # (a tuple representing the coordinate of 
     # laser on the webcam feed).
-    def __init__(self, coord, marker_radius=2):
-        self._marker_color = "light green" # default bright green
+    def __init__(self, coord, marker_radius=2, marker_color="green2"):
+        self._marker_color = marker_color
         self._marker_radius = marker_radius
         self._coord = coord
 
@@ -19,6 +19,9 @@ class Shot:
 
     def set_marker_radius(self, marker_radius):
         self._marker_radius = marker_radius
+
+    def get_color(self):
+        return self._marker_color
 
     def get_coords(self):
         return self._coord
