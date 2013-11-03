@@ -28,6 +28,7 @@ DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
 SHOT_MARKER = "shot_marker"
+IGNORE_LASER_COLOR = "ignore_laser_color"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -132,7 +133,9 @@ class MainWindow:
 
             # If we couldn't detect a laser color, it's probably not a 
             # shot
-            if laser_color is not None:  
+            if (laser_color is not None and 
+                preferences[IGNORE_LASER_COLOR] not in laser_color):
+  
                 new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
                     laser_color)
                 self._shots.append(new_shot)
@@ -517,6 +520,13 @@ def check_radius(radius):
             "between 1 and 20")
     return value  
 
+def check_ignore_laser_color(ignore_laser_color):
+    ignore_laser_color = ignore_laser_color.lower()
+    if ignore_laser_color != "red" and ignore_laser_color != "green":
+        raise argparse.ArgumentTypeError("IGNORE_LASER_COLOR must be a string " +
+            "equal to either \"green\" or \"red\" without quotes")
+    return ignore_laser_color  
+
 if __name__ == "__main__":
     # Load configuration information from the config file, which will
     # be over-ridden if settings are set on the command line
@@ -536,6 +546,9 @@ if __name__ == "__main__":
             "shots")
     parser.add_argument("-m", "--marker-radius", type=check_radius,
         help="sets the radius of shot markers in pixels [1,20]")
+    parser.add_argument("-c", "--ignore-laser-color", type=check_ignore_laser_color,
+        help="sets the color of laser that should be ignored by ShootOFF (green " +
+            "or red). No color is ignored by default")
     args = parser.parse_args()
 
     if args.detection_rate:
@@ -546,6 +559,11 @@ if __name__ == "__main__":
 
     if args.marker_radius:
         preferences[MARKER_RADIUS] = args.marker_radius
+
+    if args.ignore_laser_color:
+        preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
+    else: 
+        preferences[IGNORE_LASER_COLOR] = "none"
 
     # Configure logging
     logger = logging.getLogger('shootoff')
@@ -558,6 +576,8 @@ if __name__ == "__main__":
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     stdhandler.setFormatter(formatter)
     logger.addHandler(stdhandler)
+
+    logger.debug(preferences)
 
     # Start the main window
     mainWindow = MainWindow(config, preferences)
