@@ -14,6 +14,7 @@ import numpy
 import os
 from PIL import Image, ImageTk
 from preferences_editor import PreferencesEditor
+import re
 from shot import Shot
 from tag_parser import TagParser
 from target_editor import TargetEditor
@@ -253,9 +254,25 @@ class MainWindow:
                 target_file))
 
     def execute_region_commands(self, command_list):
+        args = []
+
         for command in command_list:
+            # Parse the command name and arguments arguments are expected to 
+            # be comma separated and in between paren: 
+            # command_name(arg0,arg1,...,argN)
+            pattern = r'(\w[\w\d_]*)\((.*)\)$'
+            match = re.match(pattern, command)
+            if match:
+                command = match.groups()[0]
+                if len(match.groups()) > 0:
+                    args = match.groups()[1].split(",")
+
+            # Run the commands
             if command == "clear_shots":
                 self.clear_shots()
+
+            if command == "play_sound":
+                self._protocol_operations.play_sound(args[0])
 
     def toggle_target_visibility(self):
         if self._show_targets:
@@ -329,6 +346,8 @@ class MainWindow:
 
         if self._loaded_training:
             self._loaded_training.destroy()
+
+        if self._protocol_operations:
             self._protocol_operations.destroy()
     
         self._protocol_operations = ProtocolOperations(self._webcam_canvas)
@@ -466,6 +485,7 @@ class MainWindow:
 
             logger.debug("Webcam resolution is %dx%d", width, height) 
             self.build_gui((width, height))
+            self._protocol_operations = ProtocolOperations(self._webcam_canvas)
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
             if fps <= 0:
