@@ -6,20 +6,36 @@ from training_protocols.ITrainingProtocol import ITrainingProtocol
 
 class ShootForScore(ITrainingProtocol):
     def __init__(self, protocol_operations, targets):
-	self._operations = protocol_operations
-        self._score = 0
+        self._operations = protocol_operations
+        self._red_score = 0
+        self._green_score = 0
 
     def shot_listener(self, shot, is_hit):
         return
 
-    def hit_listener(self, region, tags):
+    def hit_listener(self, region, tags, shot):
         if "points" in tags:
-            self._score += int(tags["points"])
-            self._operations.show_text_on_feed("score: " + str(self._score))
+            if "red" in shot.get_color():
+                self._red_score += int(tags["points"])
+            elif "green" in shot.get_color():
+                self._green_score += int(tags["points"])
+
+            message = "score: 0"
+
+            if self._red_score > 0 and self._green_score > 0:
+                message = "red score: %d\ngreen score: %d" % (self._red_score, 
+                    self._green_score)
+            elif self._red_score > 0:
+                message = "red score: %d" % self._red_score
+            elif self._green_score > 0:
+                message = "green score: %d" % self._green_score
+
+            self._operations.show_text_on_feed(message)
 
     def reset(self):
-        self._score = 0
-	self._operations.show_text_on_feed("score: 0")
+        self._red_score = 0
+        self._green_score = 0
+        self._operations.show_text_on_feed("score: 0")
 
     def destroy(self):
         pass

@@ -209,7 +209,7 @@ class MainWindow:
                 self.execute_region_commands(tags["command"])
 
             if "_internal_name" in tags and self._loaded_training != None:
-                self._loaded_training.hit_listener(region, tags)
+                self._loaded_training.hit_listener(region, tags, shot)
 
             if "_internal_name" in tags:
                 is_hit = True

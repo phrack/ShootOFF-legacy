@@ -62,7 +62,7 @@ class RandomShoot(ITrainingProtocol):
 
         return
 
-    def hit_listener(self, region, tags):
+    def hit_listener(self, region, tags, shot):
         if not self._subtarget_chain:
             return
 
