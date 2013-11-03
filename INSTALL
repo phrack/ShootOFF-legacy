@@ -4,6 +4,7 @@ Dependencies
 OpenCV
 PIL
 pyttsx (depends on setuptools)
+pyaudio
 
 Windows
 -----------------------
@@ -15,14 +16,15 @@ Windows
 5. Install Pillow-2.2.1.win-amd64-py2.7.exe
 6. Install pywin32-218.4.win-amd64-py2.7.exe
 7. Install setuptools-1.1.6.win-amd64-py2.7.exe
-8. Install pyttsx - https://pypi.python.org/pypi/pyttsx  - Download pyttsx-1.1.tar.gz, extract, run "python setup.py install" in dir
+8. Install PyAudio-0.2.7.win-amd64-py2.7.exe
+9. Install pyttsx - https://pypi.python.org/pypi/pyttsx  - Download pyttsx-1.1.tar.gz, extract, run "python setup.py install" in dir
 
 Aside from pyttsx, you can download dependencies here: http://www.lfd.uci.edu/~gohlke/pythonlibs
 
 Ubuntu
 -----------------------
 
-1. sudo apt-get install python-imaging python-imaging-tk python-opencv python-setuptools
+1. sudo apt-get install python-imaging python-imaging-tk python-opencv python-setuptools python-pyaudio
 2. git clone https://github.com/parente/pyttsx
 3. cd pyttsx
 4. sudo python setup.py install
@@ -44,6 +46,7 @@ Mac
 6. pip install numpy
 7. sudo pip install PIL
 8. sudo pip install pyttsx
-9. python shootoff.py
+9. sudo pip install pyaudio
+10. python shootoff.py
 
 
