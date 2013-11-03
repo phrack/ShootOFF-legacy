@@ -55,7 +55,9 @@ class MainWindow:
 
         self._refresh_miss_count = 0
 
-        webcam_image = self._webcam_frame
+        #OpenCV reads the frame in BGR, but PIL uses RGB, so we if we don't
+        #convert it, the colors will be off.
+        webcam_image = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2RGB)
 
         # If the shot detector saw interference, we need to show it now
         if self._show_interference:
