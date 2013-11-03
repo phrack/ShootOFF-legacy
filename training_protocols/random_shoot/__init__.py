@@ -32,8 +32,12 @@ class RandomShoot(ITrainingProtocol):
     def pick_subtargets(self):
         # We want to choose a random number of subtargets from the chain
         # then pick that number of subtargets at random
-        chain_length = random.randrange(1, len(self._subtargets))        
-        self._subtarget_chain = random.sample(self._subtargets, chain_length)
+        chain_length = random.randrange(1, len(self._subtargets))
+
+        self._subtarget_chain = []	
+        for i in range(0, chain_length):
+            self._subtarget_chain.append(random.choice(self._subtargets))
+
         self._subtarget_index = 0
 
     def say_subtargets(self):
