@@ -27,8 +27,8 @@ FEED_FPS = 30 #ms
 DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
+IGNORE_LASER_COLOR = "ignorelasercolor"
 SHOT_MARKER = "shot_marker"
-IGNORE_LASER_COLOR = "ignore_laser_color"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
 class MainWindow:
@@ -562,8 +562,6 @@ if __name__ == "__main__":
 
     if args.ignore_laser_color:
         preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
-    else: 
-        preferences[IGNORE_LASER_COLOR] = "none"
 
     # Configure logging
     logger = logging.getLogger('shootoff')
