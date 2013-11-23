@@ -8,11 +8,14 @@ class Shot:
     # Use the default color and radius for the
     # shot marker. Create a new shoot at coord
     # (a tuple representing the coordinate of 
-    # laser on the webcam feed).
-    def __init__(self, coord, marker_radius=2, marker_color="green2"):
+    # laser on the webcam feed). The timestamp
+    # is the shot timer's time stamp when the
+    # shot was detected.
+    def __init__(self, coord, marker_radius=2, marker_color="green2", timestamp=0):
         self._marker_color = marker_color
         self._marker_radius = marker_radius
         self._coord = coord
+        self._timestamp = timestamp
 
     def set_marker_color(self, marker_color):
         self._marker_color = marker_color
@@ -25,6 +28,9 @@ class Shot:
 
     def get_coords(self):
         return self._coord
+
+    def get_timestamp(self):
+        return self._timestamp
 
     def draw_marker(self, canvas):
         x = self._coord[0]

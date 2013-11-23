@@ -19,6 +19,7 @@ from shot import Shot
 from tag_parser import TagParser
 from target_editor import TargetEditor
 from target_pickler import TargetPickler
+import time
 from training_protocols.protocol_operations import ProtocolOperations
 import sys
 from threading import Thread
@@ -136,9 +137,19 @@ class MainWindow:
             # shot
             if (laser_color is not None and 
                 preferences[IGNORE_LASER_COLOR] not in laser_color):
-  
+
+                timestamp = 0
+
+                # Start the shot timer if it has not been started yet, 
+                # otherwise get the time offset
+                if self._shot_timer_start is None:
+                    self._shot_timer_start = time.time()
+                else:    
+                    timestamp = time.time() - self._shot_timer_start
+
+
                 new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
-                    laser_color)
+                    laser_color, timestamp)
                 self._shots.append(new_shot)
                 new_shot.draw_marker(self._webcam_canvas)
 
@@ -197,6 +208,8 @@ class MainWindow:
 
     def process_hit(self, shot):
         is_hit = False
+
+        print shot.get_timestamp()
 
         x = shot.get_coords()[0]
         y = shot.get_coords()[1]
@@ -284,11 +297,14 @@ class MainWindow:
 
         self._show_targets = not self._show_targets
 
-    def clear_shots(self):
+    def clear_shots(self):        
         self._webcam_canvas.delete(SHOT_MARKER)
         self._shots = []
+
         if self._loaded_training != None:
             self._loaded_training.reset()
+
+        self._shot_timer_start = None
 
     def quit(self):
         self._shutdown = True
@@ -464,6 +480,7 @@ class MainWindow:
         self._webcam_frame = None
         self._config = config
         self._preferences = preferences
+        self._shot_timer_start = None
 
         self._cv = cv2.VideoCapture(0)
 
