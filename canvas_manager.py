@@ -32,12 +32,12 @@ class CanvasManager():
   
                 self.convert_ovals(old_selection, self.convert_from_windows_ovals)  
     
-        # darken the new one and make its outline white
+        # darken the new one and make its outline gold
         if (new_selection and
             not self.is_background(new_selection)):
             
             self._canvas.itemconfig(new_selection, stipple="gray50",
-                outline="white")   
+                outline="gold")   
 
             if (platform.system() == "Windows" and 
                 not isinstance(new_selection, tuple)):  
@@ -60,7 +60,7 @@ class CanvasManager():
             points.append(newy*radius+offsety)
 
         return self._canvas.create_polygon(*points, fill=fill,
-            outline="white", stipple="gray50", tags=tags)
+            outline="gold", stipple="gray50", tags=tags)
 
     def convert_ovals(self, selection, converter):
         regions = self._canvas.find_withtag(selection)

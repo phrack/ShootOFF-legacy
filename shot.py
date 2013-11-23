@@ -51,8 +51,8 @@ class Shot:
     def toggle_selected(self):
         self._is_selected = not self._is_selected 
         if self._is_selected:
-            # Selected shots have white outlines
-            self._canvas.itemconfig(self._canvas_id, outline="white")   
+            # Selected shots have cyan outlines
+            self._canvas.itemconfig(self._canvas_id, outline="gold")   
         else:
             self._canvas.itemconfig(self._canvas_id, outline=self._marker_color)
 
