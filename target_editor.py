@@ -7,7 +7,7 @@ import os
 from PIL import Image, ImageTk
 from tag_editor_popup import TagEditorPopup
 from target_pickler import TargetPickler
-import Tkinter, tkFileDialog
+import Tkinter, tkFileDialog, ttk
 
 CURSOR = 0
 RECTANGLE = 1
@@ -38,7 +38,7 @@ class TargetEditor():
             self._selected_region != CANVAS_BACKGROUND):               
 
             self._target_canvas.itemconfig(self._selected_region,
-                fill=self._fill_color.get())
+                fill=self._fill_color_combo.get())
 
     def bring_forward(self):
         if (self._selected_region is not None and
@@ -91,8 +91,8 @@ class TargetEditor():
                 self._selected_region)
 
             if self._selected_region != CANVAS_BACKGROUND:
-                self._fill_color_menu.configure(state=Tkinter.NORMAL) 
-                self._fill_color.set(
+                self._fill_color_combo.configure(state="readonly") 
+                self._fill_color_combo.set(
                     event.widget.itemcget(self._selected_region, "fill"))
 
                 self._tags_button.configure(state=Tkinter.NORMAL)
@@ -100,7 +100,7 @@ class TargetEditor():
                 if self._tag_popup_state.get()==True:
                     self.toggle_tag_editor()
             else:
-                self._fill_color_menu.configure(state=Tkinter.DISABLED)  
+                self._fill_color_combo.configure(state=Tkinter.DISABLED)  
                 self._tags_button.configure(state=Tkinter.DISABLED)  
 
                 if self._tag_popup_state.get()==True:
@@ -184,7 +184,7 @@ class TargetEditor():
         self._window.transient(parent)
         self._window.title("Target Editor")
 
-        self._frame = Tkinter.Frame(self._window)
+        self._frame = ttk.Frame(self._window)
         self._frame.pack(padx=15, pady=15)
 
         self.create_toolbar(self._frame)
@@ -256,15 +256,13 @@ class TargetEditor():
         self._tags_button.pack(side=Tkinter.LEFT, padx=2, pady=2)
 
         # color chooser
-        self._fill_color = Tkinter.StringVar()
-        self._fill_color.set("Black")
-
-        self._fill_color_menu = Tkinter.OptionMenu(toolbar,
-            self._fill_color,
-            "black", "blue", "green", "orange", "red", "white",
-            command=self.color_selected)
-        self._fill_color_menu.configure(state=Tkinter.DISABLED)
-        self._fill_color_menu.pack(side=Tkinter.LEFT, padx=2, pady=2)
+        self._fill_color_combo = ttk.Combobox(toolbar,
+            values=["black", "blue", "green", "orange", "red", "white"],
+            state="readonly")
+        self._fill_color_combo.set("black")
+        self._fill_color_combo.bind("<<ComboboxSelected>>", self.color_selected)
+        self._fill_color_combo.configure(state=Tkinter.DISABLED)
+        self._fill_color_combo.pack(side=Tkinter.LEFT, padx=2, pady=2)
 
         toolbar.pack(fill=Tkinter.X)
 
@@ -280,8 +278,7 @@ class TargetEditor():
     def create_toolbar_button(self, parent, image, command, enabled=True):
         icon = ImageTk.PhotoImage(image)  
 
-        button = Tkinter.Button(parent, image=icon, 
-            relief=Tkinter.RAISED, command=command)
+        button = Tkinter.Button(parent, image=icon, relief=Tkinter.RAISED, command=command)
 
         if not enabled:
             button.configure(state=Tkinter.DISABLED)

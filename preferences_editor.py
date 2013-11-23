@@ -4,7 +4,7 @@
 
 import ConfigParser
 import os
-import Tkinter
+import Tkinter, ttk
 
 DETECTION_RATE = "detectionrate"
 LASER_INTENSITY = "laserintensity"
@@ -86,8 +86,8 @@ class PreferencesEditor():
         else:
             self._preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
-        if self._ignore_laser_color.get():
-            self._preferences[IGNORE_LASER_COLOR] = self._ignore_laser_color.get()
+        if self._ignore_laser_color_combo.get():
+            self._preferences[IGNORE_LASER_COLOR] = self._ignore_laser_color_combo.get()
         else:
             self._preferences[IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
 
@@ -110,10 +110,10 @@ class PreferencesEditor():
         self._window.transient(parent)
         self._window.title("Preferences")
 
-        self._frame = Tkinter.Frame(self._window)
+        self._frame = ttk.Frame(self._window)
         self._frame.pack(padx=15, pady=15)
 
-        Tkinter.Label(self._frame, 
+        ttk.Label(self._frame, 
             text="Detection Rate (ms): ").grid(column=0, row=0)
 
         self._detection_rate_spinbox = Tkinter.Spinbox(self._frame, from_=1,
@@ -126,7 +126,7 @@ class PreferencesEditor():
             validatecommand=rate_validator)
         self._detection_rate_spinbox.grid(column=1, row=0)
 
-        Tkinter.Label(self._frame, 
+        ttk.Label(self._frame, 
             text="Laser Intensity: ").grid(column=0, row=1)
 
         self._laser_intensity_spinbox = Tkinter.Spinbox(self._frame, from_=0,
@@ -140,7 +140,7 @@ class PreferencesEditor():
             validatecommand=intensity_validator)
         self._laser_intensity_spinbox.grid(column=1, row=1)
 
-        Tkinter.Label(self._frame, 
+        ttk.Label(self._frame, 
             text="Marker Radius: ").grid(column=0, row=2)
 
         self._marker_radius_spinbox = Tkinter.Spinbox(self._frame, from_=1,
@@ -153,19 +153,18 @@ class PreferencesEditor():
             validatecommand=radius_validator)
         self._marker_radius_spinbox.grid(column=1, row=2)  
 
-        Tkinter.Label(self._frame, 
+        ttk.Label(self._frame, 
             text="Ignore Laser Color: ").grid(column=0, row=3)
 
-        self._ignore_laser_color = Tkinter.StringVar()
-        self._ignore_laser_color.set(self._preferences[IGNORE_LASER_COLOR])
-        self._ignore_laser_color_menu = Tkinter.OptionMenu(self._frame,
-            self._ignore_laser_color, "none", "red", "green")
-        self._ignore_laser_color_menu.grid(column=1, row=3)
+        self._ignore_laser_color_combo = ttk.Combobox(self._frame, values=["none", "red", "green"],
+            state="readonly")
+        self._ignore_laser_color_combo.set(self._preferences[IGNORE_LASER_COLOR])
+        self._ignore_laser_color_combo.grid(column=1, row=3)
 
-        self._ok_button = Tkinter.Button(self._frame, text="OK",
+        self._ok_button = ttk.Button(self._frame, text="OK",
             command=self.save_preferences, width=10)
         self._ok_button.grid(column=0, row=4)
-        self._cancel_button = Tkinter.Button(self._frame, text="Cancel",
+        self._cancel_button = ttk.Button(self._frame, text="Cancel",
             command=self._window.destroy, width=10)
         self._cancel_button.grid(column=1, row=4)
 

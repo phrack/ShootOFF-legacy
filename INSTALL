@@ -4,6 +4,7 @@ Dependencies
 OpenCV
 PIL
 pyttsx (depends on setuptools)
+pyttk
 pyaudio
 
 Windows
@@ -24,11 +25,9 @@ Aside from pyttsx, you can download dependencies here: http://www.lfd.uci.edu/~g
 Ubuntu
 -----------------------
 
-1. sudo apt-get install python-imaging python-imaging-tk python-opencv python-setuptools python-pyaudio
-2. git clone https://github.com/parente/pyttsx
-3. cd pyttsx
-4. sudo python setup.py install
-5. ./shootoff.py
+1. sudo apt-get install pip python-imaging python-imaging-tk python-opencv python-setuptools python-pyaudio
+2. sudo pip install pyttsx pyttk
+3. ./shootoff.py
 
 Linux (General)
 -----------------------
@@ -44,9 +43,7 @@ Mac
 4. export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
 5. sudo easy_install pip
 6. pip install numpy
-7. sudo pip install PIL
-8. sudo pip install pyttsx
-9. sudo pip install pyaudio
-10. python shootoff.py
+7. sudo pip install PIL pyttsx pyttk pyaudio
+8. python shootoff.py
 
 

@@ -22,7 +22,7 @@ from target_pickler import TargetPickler
 from training_protocols.protocol_operations import ProtocolOperations
 import sys
 from threading import Thread
-import Tkinter, tkMessageBox
+import Tkinter, tkMessageBox, ttk
 
 FEED_FPS = 30 #ms
 DETECTION_RATE = "detectionrate" #ms
@@ -364,7 +364,7 @@ class MainWindow:
         self._window.protocol("WM_DELETE_WINDOW", self.quit)
         self._window.title("ShootOFF")
 
-        self._frame = Tkinter.Frame(self._window)
+        self._frame = ttk.Frame(self._window)
         self._frame.pack(padx=15, pady=15)    
 
         # Create the container for our webcam image
@@ -378,7 +378,7 @@ class MainWindow:
         self._canvas_manager = CanvasManager(self._webcam_canvas)
     
         # Create a button to clear shots
-        self._clear_shots_button = Tkinter.Button(
+        self._clear_shots_button = ttk.Button(
             self._frame, text="Clear Shots", command=self.clear_shots)
         self._clear_shots_button.pack()
 
