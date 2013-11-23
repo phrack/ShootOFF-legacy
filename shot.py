@@ -16,6 +16,8 @@ class Shot:
         self._marker_radius = marker_radius
         self._coord = coord
         self._timestamp = timestamp
+        self._canvas_id = None
+        self._is_selected = False
 
     def set_marker_color(self, marker_color):
         self._marker_color = marker_color
@@ -36,11 +38,19 @@ class Shot:
         x = self._coord[0]
         y = self._coord[1]
 
-        canvas.create_oval(
+        self._canvas_id = canvas.create_oval(
             x - self._marker_radius,
             y - self._marker_radius,
             x + self._marker_radius,
             y + self._marker_radius, 
             fill=self._marker_color, outline=self._marker_color, 
             tags=("shot_marker"))
+
+    def toggle_selected(self, canvas):
+        self._is_selected = not self._is_selected 
+        if self._is_selected:
+            # Selected shots have white outlines
+            canvas.itemconfig(self._canvas_id, outline="white")   
+        else:
+            canvas.itemconfig(self._canvas_id, outline=self._marker_color)
 

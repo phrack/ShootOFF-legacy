@@ -147,6 +147,14 @@ class MainWindow:
                 else:    
                     timestamp = time.time() - self._shot_timer_start
 
+                if "green" in laser_color:
+                    tree_item = self._shot_timer_tree.insert("", "end", 
+                        values=[timestamp, "green"])
+                else:
+                    tree_item = self._shot_timer_tree.insert("", "end", 
+                        values=[timestamp, laser_color])
+                self._shot_timer_tree.see(tree_item)
+
                 new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
                     laser_color, timestamp)
                 self._shots.append(new_shot)
@@ -302,6 +310,9 @@ class MainWindow:
             self._loaded_training.reset()
 
         self._shot_timer_start = None
+        shot_entries = self._shot_timer_tree.get_children() 
+        for shot in shot_entries: self._shot_timer_tree.delete(shot)
+        self._previous_shot_time_selection = None
 
     def quit(self):
         self._shutdown = True
@@ -371,19 +382,29 @@ class MainWindow:
         preferences_editor = PreferencesEditor(self._window, self._config,
             self._preferences)
 
-    def build_gui(self, feed_dimensions=(600,600)):
+    def shot_time_selected(self, event):
+        selected_shots = event.widget.focus()
+        shot_index = event.widget.index(selected_shots)
+        self._shots[shot_index].toggle_selected(self._webcam_canvas)
+
+        if self._previous_shot_time_selection is not None:
+            self._previous_shot_time_selection.toggle_selected(self._webcam_canvas)
+
+        self._previous_shot_time_selection = self._shots[shot_index]
+
+    def build_gui(self, feed_dimensions=(600,480)):
         # Create the main window
         self._window = Tkinter.Tk()
         self._window.protocol("WM_DELETE_WINDOW", self.quit)
         self._window.title("ShootOFF")
 
         self._frame = ttk.Frame(self._window)
-        self._frame.pack(padx=15, pady=15)    
+        self._frame.pack()    
 
         # Create the container for our webcam image
         self._webcam_canvas = Tkinter.Canvas(self._frame, 
             width=feed_dimensions[0], height=feed_dimensions[1])      
-        self._webcam_canvas.pack()
+        self._webcam_canvas.grid(row=0, column=0)
 
         self._webcam_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._webcam_canvas.bind('<Delete>', self.canvas_delete_target)
@@ -393,7 +414,21 @@ class MainWindow:
         # Create a button to clear shots
         self._clear_shots_button = ttk.Button(
             self._frame, text="Clear Shots", command=self.clear_shots)
-        self._clear_shots_button.pack()
+        self._clear_shots_button.grid(row=1, column=0)
+    
+        # Create the shot timer tree
+        self._shot_timer_tree = ttk.Treeview(self._frame, columns=["time", "laser"], 
+            displaycolumns="#all", selectmode="browse", show="headings")
+        self._shot_timer_tree.heading("time", text="Time")
+        self._shot_timer_tree.heading("laser", text="Laser")
+        self._shot_timer_tree.column("time", width=50)
+        self._shot_timer_tree.column("laser", width=50)
+        tree_scroll = ttk.Scrollbar(self._frame, orient=Tkinter.VERTICAL, 
+            command=self._shot_timer_tree.yview)
+        self._shot_timer_tree['yscroll'] = tree_scroll.set
+        self._shot_timer_tree.grid(row=0, column=1, rowspan=2, sticky=Tkinter.NSEW)
+        tree_scroll.grid(row=0, column=2, rowspan=2, stick=Tkinter.NS)  
+        self._shot_timer_tree.bind("<<TreeviewSelect>>", self.shot_time_selected)  
 
         self.create_menu()
 
@@ -478,6 +513,7 @@ class MainWindow:
         self._config = config
         self._preferences = preferences
         self._shot_timer_start = None
+        self._previous_shot_time_selection = None
 
         self._cv = cv2.VideoCapture(0)
 
