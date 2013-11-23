@@ -11,16 +11,18 @@ class Shot:
     # laser on the webcam feed). The timestamp
     # is the shot timer's time stamp when the
     # shot was detected.
-    def __init__(self, coord, marker_radius=2, marker_color="green2", timestamp=0):
+    def __init__(self, coord, canvas, marker_radius=2, marker_color="green2", timestamp=0):
         self._marker_color = marker_color
         self._marker_radius = marker_radius
         self._coord = coord
+        self._canvas = canvas
         self._timestamp = timestamp
         self._canvas_id = None
         self._is_selected = False
 
     def set_marker_color(self, marker_color):
         self._marker_color = marker_color
+        self._canvas.itemconfig(self._canvas_id, fill=marker_color)
 
     def set_marker_radius(self, marker_radius):
         self._marker_radius = marker_radius
@@ -34,11 +36,11 @@ class Shot:
     def get_timestamp(self):
         return self._timestamp
 
-    def draw_marker(self, canvas):
+    def draw_marker(self):
         x = self._coord[0]
         y = self._coord[1]
 
-        self._canvas_id = canvas.create_oval(
+        self._canvas_id = self._canvas.create_oval(
             x - self._marker_radius,
             y - self._marker_radius,
             x + self._marker_radius,
@@ -46,11 +48,11 @@ class Shot:
             fill=self._marker_color, outline=self._marker_color, 
             tags=("shot_marker"))
 
-    def toggle_selected(self, canvas):
+    def toggle_selected(self):
         self._is_selected = not self._is_selected 
         if self._is_selected:
             # Selected shots have white outlines
-            canvas.itemconfig(self._canvas_id, outline="white")   
+            self._canvas.itemconfig(self._canvas_id, outline="white")   
         else:
-            canvas.itemconfig(self._canvas_id, outline=self._marker_color)
+            self._canvas.itemconfig(self._canvas_id, outline=self._marker_color)
 

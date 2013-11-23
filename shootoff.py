@@ -155,10 +155,10 @@ class MainWindow:
                         values=[timestamp, laser_color])
                 self._shot_timer_tree.see(tree_item)
 
-                new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
+                new_shot = Shot((x, y), self._webcam_canvas, self._preferences[MARKER_RADIUS],
                     laser_color, timestamp)
                 self._shots.append(new_shot)
-                new_shot.draw_marker(self._webcam_canvas)
+                new_shot.draw_marker()
 
                 # Process the shot to see if we hit a region and perform
                 # a training protocol specific action and any if we did
@@ -385,10 +385,10 @@ class MainWindow:
     def shot_time_selected(self, event):
         selected_shots = event.widget.focus()
         shot_index = event.widget.index(selected_shots)
-        self._shots[shot_index].toggle_selected(self._webcam_canvas)
+        self._shots[shot_index].toggle_selected()
 
         if self._previous_shot_time_selection is not None:
-            self._previous_shot_time_selection.toggle_selected(self._webcam_canvas)
+            self._previous_shot_time_selection.toggle_selected()
 
         self._previous_shot_time_selection = self._shots[shot_index]
 
