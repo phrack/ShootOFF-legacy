@@ -374,7 +374,7 @@ class MainWindow:
         if self._protocol_operations:
             self._protocol_operations.destroy()
     
-        self._protocol_operations = ProtocolOperations(self._webcam_canvas)
+        self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
         self._loaded_training = imp.load_module("__init__", *plugin).load(
             self._protocol_operations, targets)       
 
@@ -535,7 +535,7 @@ class MainWindow:
 
             logger.debug("Webcam resolution is %dx%d", width, height) 
             self.build_gui((width, height))
-            self._protocol_operations = ProtocolOperations(self._webcam_canvas)
+            self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
             if fps <= 0:

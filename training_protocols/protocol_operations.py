@@ -10,9 +10,10 @@ import wave
 # This class hold shootoff functions that should be exposed to training protocol
 # plugins. Each instance of a plugin has its own instance of this class.
 class ProtocolOperations():
-    def __init__(self, canvas):
+    def __init__(self, canvas, shootoff):
         self._canvas = canvas
         self._plugin_canvas_artifacts = []
+        self._shootoff = shootoff
         self._feed_text = self._canvas.create_text(1, 1, anchor="nw", fill="white")
         self._plugin_canvas_artifacts.append(self._feed_text)
 
@@ -24,6 +25,9 @@ class ProtocolOperations():
     def destroy(self):
         self._tts_engine.endLoop()
         self.clear_canvas()
+
+    def clear_shots(self):
+        self._shootoff.clear_shots()
 
     # Use text-to-speech to say message outloud
     def say(self, message):
