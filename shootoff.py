@@ -147,7 +147,6 @@ class MainWindow:
                 else:    
                     timestamp = time.time() - self._shot_timer_start
 
-
                 new_shot = Shot((x, y), self._preferences[MARKER_RADIUS],
                     laser_color, timestamp)
                 self._shots.append(new_shot)
@@ -208,8 +207,6 @@ class MainWindow:
 
     def process_hit(self, shot):
         is_hit = False
-
-        print shot.get_timestamp()
 
         x = shot.get_coords()[0]
         y = shot.get_coords()[1]
