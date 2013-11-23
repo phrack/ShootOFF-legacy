@@ -59,8 +59,8 @@ class TargetEditor():
             self._selected_region != CANVAS_BACKGROUND):
             
             above = self._target_canvas.find_below(self._selected_region)
-            
-            if len(above) > 0:
+
+            if len(above) > 0  and above != CANVAS_BACKGROUND:
                 self._target_canvas.tag_lower(self._selected_region,
                     above)
 
