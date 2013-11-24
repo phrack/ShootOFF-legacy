@@ -314,6 +314,8 @@ class MainWindow:
         for shot in shot_entries: self._shot_timer_tree.delete(shot)
         self._previous_shot_time_selection = None
 
+        self._webcam_canvas.focus_set()
+
     def quit(self):
         self._shutdown = True
         self._window.quit()
@@ -391,6 +393,8 @@ class MainWindow:
             self._previous_shot_time_selection.toggle_selected()
 
         self._previous_shot_time_selection = self._shots[shot_index]
+
+        self._webcam_canvas.focus_set()
 
     def build_gui(self, feed_dimensions=(600,480)):
         # Create the main window

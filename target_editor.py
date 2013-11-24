@@ -34,6 +34,8 @@ class TargetEditor():
                 self._target_canvas)
 
     def color_selected(self, event):
+        self._target_canvas.focus_set()
+
         if (self._selected_region is not None and
             self._selected_region != CANVAS_BACKGROUND):               
 

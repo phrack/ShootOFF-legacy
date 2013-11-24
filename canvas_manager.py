@@ -11,6 +11,10 @@ class CanvasManager():
     def selection_update_listener(self, old_selection, new_selection):
         self._selection = new_selection
 
+        # Some of the ttk widgets steal focus, so we need to get it back
+        # to the canvas on click
+        self._canvas.focus_set()
+
         # brighten the old selection and make its outline black
         if (old_selection and
             not self.is_background(old_selection)):
