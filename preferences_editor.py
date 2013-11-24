@@ -168,6 +168,18 @@ class PreferencesEditor():
             command=self._window.destroy, width=10)
         self._cancel_button.grid(column=1, row=4)
 
+        # Center this window on its parent
+        parent_width = parent.winfo_width()
+        parent_height = parent.winfo_height()
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+
+        self_width = self._window.winfo_width()
+        self_height = self._window.winfo_height()
+
+        self._window.geometry("+%d+%d" % (parent_x+(parent_width - self_width)/4,
+            parent_y+(parent_height-self_height)/4))
+
         self._frame.pack()
 
     def check_detection_rate(self, P):

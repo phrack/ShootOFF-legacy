@@ -208,6 +208,13 @@ class TargetEditor():
 
         self._canvas_manager = CanvasManager(self._target_canvas)
 
+        # Align this window with it's parent otherwise it ends up all kinds of
+        # crazy places when multiple monitors are used
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+
+        self._window.geometry("+%d+%d" % (parent_x+20, parent_y+20))
+
     def create_toolbar(self, parent):
        # Create the toolbar
         toolbar = Tkinter.Frame(parent, bd=1, relief=Tkinter.RAISED)
