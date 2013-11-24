@@ -27,6 +27,10 @@ class Shot:
     def set_marker_radius(self, marker_radius):
         self._marker_radius = marker_radius
 
+	# Redraw the marker with the new radius
+	self._canvas.delete(self._canvas_id)
+	self.draw_marker()
+
     def get_color(self):
         return self._marker_color
 
