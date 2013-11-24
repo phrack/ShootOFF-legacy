@@ -318,6 +318,7 @@ class MainWindow:
 
     def quit(self):
         self._shutdown = True
+        self._cv.release()
         self._window.quit()
 
     def canvas_click(self, event):
