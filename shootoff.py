@@ -197,7 +197,7 @@ class MainWindow:
         l = self._webcam_frame.shape[1]
         h = self._webcam_frame.shape[0]
         mask = numpy.zeros((h,l,1), numpy.uint8)
-        cv2.circle(mask, (x, y), 15, (255,255,555), -1)
+        cv2.circle(mask, (x, y), 10, (255,255,555), -1)
         mean_color = cv2.mean(self._webcam_frame, mask)
 
         # Remember that self._webcam_frame is in BGR
