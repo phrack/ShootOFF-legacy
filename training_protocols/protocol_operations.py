@@ -23,7 +23,17 @@ class ProtocolOperations():
         self._tts_engine.startLoop(False)
 
     def destroy(self):
-        self._tts_engine.endLoop()
+        # pyttsx errors out if we try to end a loop that isn't running, so
+        # we need to check if we are in a loop first, but the only good
+        # way to do this right now is to check an internal flag. This hack
+        # checks that the flag exists and checks it before ending the loop
+        # if it does, otherwise we just end the loop (better to get a CLI
+        # error message than the actual behavior of not ending the loop,
+        # which is weird sound artifacts).
+        if hasattr(self._tts_engine, "_inLoop") and self._tts_engine._inLoop:
+            self._tts_engine.endLoop()
+        elif not hasattr(self._tts_engine, "_inLoop"):
+            self._tts_engine.endLoop()
         self.clear_canvas()
 
     def clear_shots(self):
