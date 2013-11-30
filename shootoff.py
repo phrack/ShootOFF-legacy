@@ -26,6 +26,7 @@ from threading import Thread
 import Tkinter, tkMessageBox, ttk
 
 FEED_FPS = 30 #ms
+DEBUG = "debug"
 DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
@@ -138,35 +139,38 @@ class MainWindow:
             if (laser_color is not None and 
                 preferences[IGNORE_LASER_COLOR] not in laser_color):
 
-                timestamp = 0
-
-                # Start the shot timer if it has not been started yet, 
-                # otherwise get the time offset
-                if self._shot_timer_start is None:
-                    self._shot_timer_start = time.time()
-                else:    
-                    timestamp = time.time() - self._shot_timer_start
-
-                if "green" in laser_color:
-                    tree_item = self._shot_timer_tree.insert("", "end", 
-                        values=[timestamp, "green"])
-                else:
-                    tree_item = self._shot_timer_tree.insert("", "end", 
-                        values=[timestamp, laser_color])
-                self._shot_timer_tree.see(tree_item)
-
-                new_shot = Shot((x, y), self._webcam_canvas, self._preferences[MARKER_RADIUS],
-                    laser_color, timestamp)
-                self._shots.append(new_shot)
-                new_shot.draw_marker()
-
-                # Process the shot to see if we hit a region and perform
-                # a training protocol specific action and any if we did
-                # command tag actions if we did
-                self.process_hit(new_shot)
+                self.handle_shot(laser_color, x, y)
 
         if self._shutdown == False:
             self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
+
+    def handle_shot(self, laser_color, x, y):
+        timestamp = 0
+
+        # Start the shot timer if it has not been started yet, 
+        # otherwise get the time offset
+        if self._shot_timer_start is None:
+            self._shot_timer_start = time.time()
+        else:    
+            timestamp = time.time() - self._shot_timer_start
+
+        if "green" in laser_color:
+            tree_item = self._shot_timer_tree.insert("", "end", 
+                values=[timestamp, "green"])
+        else:
+            tree_item = self._shot_timer_tree.insert("", "end", 
+                values=[timestamp, laser_color])
+        self._shot_timer_tree.see(tree_item)
+
+        new_shot = Shot((x, y), self._webcam_canvas, self._preferences[MARKER_RADIUS],
+            laser_color, timestamp)
+        self._shots.append(new_shot)
+        new_shot.draw_marker()
+
+        # Process the shot to see if we hit a region and perform
+        # a training protocol specific action and any if we did
+        # command tag actions if we did
+        self.process_hit(new_shot)
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh],[0],None,[256],[0,255])
@@ -320,6 +324,14 @@ class MainWindow:
         self._shutdown = True
         self._cv.release()
         self._window.quit()
+    
+    def canvas_click_red(self, event):
+        if preferences[DEBUG]:
+            self.handle_shot("red", event.x, event.y)
+
+    def canvas_click_green(self, event):
+        if preferences[DEBUG]:
+            self.handle_shot("green", event.x, event.y)
 
     def canvas_click(self, event):
         # find the target that was selected
@@ -413,6 +425,10 @@ class MainWindow:
 
         self._webcam_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._webcam_canvas.bind('<Delete>', self.canvas_delete_target)
+        # Click to shoot
+        if preferences[DEBUG]:
+            self._webcam_canvas.bind('<Shift-ButtonPress-1>', self.canvas_click_red)
+            self._webcam_canvas.bind('<Control-ButtonPress-1>', self.canvas_click_green)
 
         self._canvas_manager = CanvasManager(self._webcam_canvas)
     
@@ -645,6 +661,7 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
+    preferences[DEBUG] = args.debug
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     stdhandler.setFormatter(formatter)
