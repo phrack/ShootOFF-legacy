@@ -10,6 +10,9 @@ import wave
 # This class hold shootoff functions that should be exposed to training protocol
 # plugins. Each instance of a plugin has its own instance of this class.
 class ProtocolOperations():
+    LARGEST_REGION = 0
+    BOUNDING_BOX = 1
+
     def __init__(self, canvas, shootoff):
         self._canvas = canvas
         self._plugin_canvas_artifacts = []
@@ -21,6 +24,49 @@ class ProtocolOperations():
         # slow down the wpm rate otherwise they speek to fast
         self._tts_engine.setProperty("rate", 150)
         self._tts_engine.startLoop(False)
+
+    # Returns the centroid of a target using the specified mode:
+    # LARGEST_REGION calculates the centroid of the target by calculating
+    #   the centroid of the largest region. The largest region is determined
+    #   by calculating the area of the each region's bounding box (this isn't as
+    #   accurate as determining the area of each region, but it's simple). This
+    #   mode works well for targets with stacked regions (e.g. a traditional bullseye).
+    # BOUNDING_BOX calculates the centroid of a target by calculating the center of 
+    #   the bounding box that encompasses all of a target's region. This mode works
+    #   well for targets whose regions are not stacked (e.g. a target with 5 separate
+    #   bullseyes). 
+    def calculate_target_centroid(self, target, mode=LARGEST_REGION):
+        coords = ()
+        target_name = "_internal_name" + ":" + target["regions"][0]["_internal_name"]
+        
+        if mode == self.LARGEST_REGION:
+            regions = self._canvas.find_withtag(target_name)
+            largest_region = None
+
+            # Find the largest region by bounding box size
+            for region in regions:
+                if largest_region is None:
+                    largest_region = region
+                elif self._area_bbox(largest_region) < self._area_bbox(region):
+                    largest_region = region
+
+            coords = self._canvas.coords(largest_region)
+
+        elif mode == self.BOUNDING_BOX:
+            coords = self._canvas.bbox(target_name)
+
+        # Calculate centroid
+        x = coords[::2]
+        y = coords[1::2]
+        return (sum(x) / len(x), sum(y) / len(x))
+
+    # This method expects to get the id of a target region on a canvas and will return
+    # the area of its bounding box
+    def _area_bbox(self, region):
+        coords = self._canvas.bbox(region)
+        width = coords[2] - coords[0]
+        height = coords[3] - coords[1]
+        return (width * height)
 
     def destroy(self):
         # pyttsx errors out if we try to end a loop that isn't running, so
