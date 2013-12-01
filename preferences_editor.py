@@ -88,17 +88,17 @@ class PreferencesEditor():
         else:
             self._preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
 
-        self._config.set("ShootOFF", configurator.DETECTION_RATE, 
+        self._config_parser.set("ShootOFF", configurator.DETECTION_RATE, 
             str(self._preferences[configurator.DETECTION_RATE]))
-        self._config.set("ShootOFF", configurator.LASER_INTENSITY,
+        self._config_parser.set("ShootOFF", configurator.LASER_INTENSITY,
             str(self._preferences[configurator.LASER_INTENSITY]))
-        self._config.set("ShootOFF", configurator.MARKER_RADIUS,
+        self._config_parser.set("ShootOFF", configurator.MARKER_RADIUS,
             str(self._preferences[configurator.MARKER_RADIUS]))
-        self._config.set("ShootOFF", configurator.IGNORE_LASER_COLOR,
+        self._config_parser.set("ShootOFF", configurator.IGNORE_LASER_COLOR,
             self._preferences[configurator.IGNORE_LASER_COLOR])
 
         with open("settings.conf", "w") as config_file:
-            self._config.write(config_file)
+            self._config_parser.write(config_file)
 
         self._window.destroy()
 
@@ -197,8 +197,8 @@ class PreferencesEditor():
         else:
             return False
 
-    def __init__(self, parent, config, preferences):
-        self._config = config
+    def __init__(self, parent, config_parser, preferences):
+        self._config_parser = config_parser
         self._preferences = preferences
 
         self.build_gui(parent)

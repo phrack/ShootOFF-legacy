@@ -78,13 +78,13 @@ class Configurator():
             preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
 
         self._preferences = preferences
-        self._config = config
+        self._config_parser = config
 
     def get_preferences(self):
         return self._preferences
 
-    def get_config(self):
-        return self._config
+    def get_config_parser(self):
+        return self._config_parser
 
     def get_logger(self):
         logger = logging.getLogger('shootoff')

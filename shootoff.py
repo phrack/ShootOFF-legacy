@@ -391,7 +391,7 @@ class MainWindow:
             self._protocol_operations, targets)       
 
     def edit_preferences(self):
-        preferences_editor = PreferencesEditor(self._window, self._config,
+        preferences_editor = PreferencesEditor(self._window, self._config_parser,
             self._preferences)
 
     def save_feed_image(self):
@@ -539,7 +539,7 @@ class MainWindow:
                 command=self.callback_factory(self.load_training, plugin_info),
                 variable=self._training_selection, value=training_info["name"])
 
-    def __init__(self, config, preferences):
+    def __init__(self, config_parser, preferences):
         self._shots = []
         self._targets = []
         self._target_count = 0
@@ -550,7 +550,7 @@ class MainWindow:
         self._seen_interference = False
         self._show_interference = False
         self._webcam_frame = None
-        self._config = config
+        self._config_parser = config_parser
         self._preferences = preferences
         self._shot_timer_start = None
         self._previous_shot_time_selection = None
@@ -618,5 +618,5 @@ if __name__ == "__main__":
     logger.debug(preferences)
 
     # Start the main window
-    mainWindow = MainWindow(config.get_config(), preferences)
+    mainWindow = MainWindow(config.get_config_parser(), preferences)
     mainWindow.main()
