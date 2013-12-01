@@ -7,12 +7,12 @@ import pyttsx
 from threading import Thread
 import wave
 
+LARGEST_REGION = 0
+BOUNDING_BOX = 1
+
 # This class hold shootoff functions that should be exposed to training protocol
 # plugins. Each instance of a plugin has its own instance of this class.
 class ProtocolOperations():
-    LARGEST_REGION = 0
-    BOUNDING_BOX = 1
-
     def __init__(self, canvas, shootoff):
         self._canvas = canvas
         self._plugin_canvas_artifacts = []
@@ -39,7 +39,7 @@ class ProtocolOperations():
         coords = ()
         target_name = "_internal_name" + ":" + target["regions"][0]["_internal_name"]
         
-        if mode == self.LARGEST_REGION:
+        if mode == LARGEST_REGION:
             regions = self._canvas.find_withtag(target_name)
             largest_region = None
 
@@ -52,7 +52,7 @@ class ProtocolOperations():
 
             coords = self._canvas.coords(largest_region)
 
-        elif mode == self.BOUNDING_BOX:
+        elif mode == BOUNDING_BOX:
             coords = self._canvas.bbox(target_name)
 
         # Calculate centroid
