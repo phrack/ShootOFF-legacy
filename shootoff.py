@@ -4,12 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import argparse
 from canvas_manager import CanvasManager
+import configurator
+from configurator import Configurator
 import cv2
 import glob
 import imp
-import logging
 import numpy
 import os
 from PIL import Image, ImageTk
@@ -21,16 +21,10 @@ from target_editor import TargetEditor
 from target_pickler import TargetPickler
 import time
 from training_protocols.protocol_operations import ProtocolOperations
-import sys
 from threading import Thread
 import Tkinter, tkFileDialog, tkMessageBox, ttk
 
 FEED_FPS = 30 #ms
-DEBUG = "debug"
-DETECTION_RATE = "detectionrate" #ms
-LASER_INTENSITY = "laserintensity"
-MARKER_RADIUS = "markerradius"
-IGNORE_LASER_COLOR = "ignorelasercolor"
 SHOT_MARKER = "shot_marker"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
@@ -70,7 +64,7 @@ class MainWindow:
 
                 frame_bw = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2GRAY)
                 (thresh, webcam_image) = cv2.threshold(frame_bw,
-                    self._preferences[LASER_INTENSITY], 255,
+                    self._preferences[configurator.LASER_INTENSITY], 255,
                     cv2.THRESH_BINARY)             
 
         # Show webcam image a Tk image container (note:
@@ -109,7 +103,8 @@ class MainWindow:
 
     def detect_shots(self):
         if (self._webcam_frame is None):
-            self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
+            self._window.after(self._preferences[configurator.DETECTION_RATE],
+                self.detect_shots)
             return
 
         # Makes feed black and white
@@ -117,7 +112,7 @@ class MainWindow:
 
         # Threshold the image
         (thresh, frame_thresh) = cv2.threshold(frame_bw, 
-            self._preferences[LASER_INTENSITY], 255, cv2.THRESH_BINARY)
+            self._preferences[configurator.LASER_INTENSITY], 255, cv2.THRESH_BINARY)
 	
         # Determine if we have a light source or glare on the feed
         if not self._seen_interference:
@@ -137,12 +132,13 @@ class MainWindow:
             # If we couldn't detect a laser color, it's probably not a 
             # shot
             if (laser_color is not None and 
-                preferences[IGNORE_LASER_COLOR] not in laser_color):
+                preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
 
                 self.handle_shot(laser_color, x, y)
 
         if self._shutdown == False:
-            self._window.after(self._preferences[DETECTION_RATE], self.detect_shots)
+            self._window.after(self._preferences[configurator.DETECTION_RATE],
+                self.detect_shots)
 
     def handle_shot(self, laser_color, x, y):
         timestamp = 0
@@ -162,7 +158,8 @@ class MainWindow:
                 values=[timestamp, laser_color])
         self._shot_timer_tree.see(tree_item)
 
-        new_shot = Shot((x, y), self._webcam_canvas, self._preferences[MARKER_RADIUS],
+        new_shot = Shot((x, y), self._webcam_canvas, 
+            self._preferences[configurator.MARKER_RADIUS],
             laser_color, timestamp)
         self._shots.append(new_shot)
         new_shot.draw_marker()
@@ -182,7 +179,7 @@ class MainWindow:
             # We will only warn about interference once each run
             self._seen_interference = True
 
-            logging.warning(
+            logger.warning(
                 "Glare or light source detected. %f of the image is dark." %
                 percent_dark)
 
@@ -326,11 +323,11 @@ class MainWindow:
         self._window.quit()
     
     def canvas_click_red(self, event):
-        if preferences[DEBUG]:
+        if preferences[configurator.DEBUG]:
             self.handle_shot("red", event.x, event.y)
 
     def canvas_click_green(self, event):
-        if preferences[DEBUG]:
+        if preferences[configurator.DEBUG]:
             self.handle_shot("green", event.x, event.y)
 
     def canvas_click(self, event):
@@ -447,7 +444,7 @@ class MainWindow:
         self._webcam_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._webcam_canvas.bind('<Delete>', self.canvas_delete_target)
         # Click to shoot
-        if preferences[DEBUG]:
+        if preferences[configurator.DEBUG]:
             self._webcam_canvas.bind('<Shift-ButtonPress-1>', self.canvas_click_red)
             self._webcam_canvas.bind('<Control-ButtonPress-1>', self.canvas_click_green)
 
@@ -612,85 +609,14 @@ class MainWindow:
             Tkinter.mainloop()
             self._window.destroy()
 
-def check_rate(rate):
-    value = int(rate)
-    if value < 1:
-        raise argparse.ArgumentTypeError("DETECTION_RATE must be a number " +
-            "greater than 0")
-    return value  
-
-def check_intensity(intensity):
-    value = int(intensity)
-    if value < 0 or value > 255:
-        raise argparse.ArgumentTypeError("LASER_INTENSITY must be a number " +
-            "between 0 and 255")
-    return value   
-
-def check_radius(radius):
-    value = int(radius)
-    if value < 1 or value > 20:
-        raise argparse.ArgumentTypeError("MARKER_RADIUS must be a number " +
-            "between 1 and 20")
-    return value  
-
-def check_ignore_laser_color(ignore_laser_color):
-    ignore_laser_color = ignore_laser_color.lower()
-    if ignore_laser_color != "red" and ignore_laser_color != "green":
-        raise argparse.ArgumentTypeError("IGNORE_LASER_COLOR must be a string " +
-            "equal to either \"green\" or \"red\" without quotes")
-    return ignore_laser_color  
-
 if __name__ == "__main__":
-    # Load configuration information from the config file, which will
-    # be over-ridden if settings are set on the command line
-    config, preferences = PreferencesEditor.map_configuration()
+    config = Configurator()
 
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(prog="shootoff.py")
-    parser.add_argument("-d", "--debug", action="store_true", 
-        help="turn on debug log messages")
-    parser.add_argument("-r", "--detection-rate", type=check_rate,
-        help="sets the rate at which shots are detected in milliseconds. " +
-            "this should be set to about the length of time your laser trainer " +
-            "stays on for each shot, typically about 100 ms")
-    parser.add_argument("-i", "--laser-intensity", type=check_intensity, 
-        help="sets the intensity threshold for detecting the laser [0,255]. " +
-            "this should be as high as you can set it while still detecting " +
-            "shots")
-    parser.add_argument("-m", "--marker-radius", type=check_radius,
-        help="sets the radius of shot markers in pixels [1,20]")
-    parser.add_argument("-c", "--ignore-laser-color", type=check_ignore_laser_color,
-        help="sets the color of laser that should be ignored by ShootOFF (green " +
-            "or red). No color is ignored by default")
-    args = parser.parse_args()
-
-    if args.detection_rate:
-        preferences[DETECTION_RATE] = args.detection_rate
-
-    if args.laser_intensity:
-        preferences[LASER_INTENSITY] = args.laser_intensity
-
-    if args.marker_radius:
-        preferences[MARKER_RADIUS] = args.marker_radius
-
-    if args.ignore_laser_color:
-        preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
-
-    # Configure logging
-    logger = logging.getLogger('shootoff')
-    stdhandler = logging.StreamHandler(sys.stdout)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    preferences[DEBUG] = args.debug
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    stdhandler.setFormatter(formatter)
-    logger.addHandler(stdhandler)
+    preferences = config.get_preferences()
+    logger = config.get_logger()
 
     logger.debug(preferences)
 
     # Start the main window
-    mainWindow = MainWindow(config, preferences)
+    mainWindow = MainWindow(config.get_config(), preferences)
     mainWindow.main()

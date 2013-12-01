@@ -3,13 +3,9 @@
 # found in the LICENSE file.
 
 import ConfigParser
+import configurator
 import os
 import Tkinter, ttk
-
-DETECTION_RATE = "detectionrate"
-LASER_INTENSITY = "laserintensity"
-MARKER_RADIUS = "markerradius"
-IGNORE_LASER_COLOR = "ignorelasercolor"
 
 DEFAULT_DETECTION_RATE = 100 #ms
 DEFAULT_LASER_INTENSITY = 230
@@ -25,42 +21,43 @@ class PreferencesEditor():
 
         if os.path.exists("settings.conf"):
             try:
-                preferences[DETECTION_RATE] = config.getint("ShootOFF",
-                    DETECTION_RATE)
+                preferences[configurator.DETECTION_RATE] = config.getint("ShootOFF",
+                    configurator.DETECTION_RATE)
             except ConfigParser.NoOptionError:
-                preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
+                preferences[configurator.DETECTION_RATE] = DEFAULT_DETECTION_RATE
 
             try:
-                preferences[LASER_INTENSITY] = config.getint("ShootOFF",
-                    LASER_INTENSITY)
+                preferences[configurator.LASER_INTENSITY] = config.getint("ShootOFF",
+                    configurator.LASER_INTENSITY)
             except ConfigParser.NoOptionError:
-                preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
+                preferences[configurator.LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
 
             try:
-                preferences[MARKER_RADIUS] = config.getint("ShootOFF", MARKER_RADIUS)
+                preferences[configurator.MARKER_RADIUS] = config.getint("ShootOFF",
+			configurator.MARKER_RADIUS)
             except ConfigParser.NoOptionError:
-                preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
+                preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
             try:
-                preferences[IGNORE_LASER_COLOR] = config.get("ShootOFF",
-                    IGNORE_LASER_COLOR)
+                preferences[configurator.IGNORE_LASER_COLOR] = config.get("ShootOFF",
+                    configurator.IGNORE_LASER_COLOR)
             except ConfigParser.NoOptionError:
-                preferences[IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
+                preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
         else:
-            preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
-            preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
-            preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
-            preferences[IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
+            preferences[configurator.DETECTION_RATE] = DEFAULT_DETECTION_RATE
+            preferences[configurator.LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
+            preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
+            preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
 
             config.add_section("ShootOFF")
-            config.set("ShootOFF", DETECTION_RATE, 
-                str(preferences[DETECTION_RATE]))   
-            config.set("ShootOFF", LASER_INTENSITY, 
-                str(preferences[LASER_INTENSITY]))
-            config.set("ShootOFF", MARKER_RADIUS, 
-                str(preferences[MARKER_RADIUS]))
-            config.set("ShootOFF", IGNORE_LASER_COLOR, 
-                preferences[IGNORE_LASER_COLOR])    
+            config.set("ShootOFF", configurator.DETECTION_RATE, 
+                str(preferences[configurator.DETECTION_RATE]))   
+            config.set("ShootOFF", configurator.LASER_INTENSITY, 
+                str(preferences[configurator.LASER_INTENSITY]))
+            config.set("ShootOFF", configurator.MARKER_RADIUS, 
+                str(preferences[configurator.MARKER_RADIUS]))
+            config.set("ShootOFF", configurator.IGNORE_LASER_COLOR, 
+                preferences[configurator.IGNORE_LASER_COLOR])    
 
             with open("settings.conf", "w") as config_file:
                 config.write(config_file)
@@ -69,36 +66,36 @@ class PreferencesEditor():
 
     def save_preferences(self):
         if self._detection_rate_spinbox.get():
-            self._preferences[DETECTION_RATE] = int(
+            self._preferences[configurator.DETECTION_RATE] = int(
                 self._detection_rate_spinbox.get())
         else:
-            self._preferences[DETECTION_RATE] = DEFAULT_DETECTION_RATE
+            self._preferences[configurator.DETECTION_RATE] = DEFAULT_DETECTION_RATE
 
         if self._laser_intensity_spinbox.get():
-            self._preferences[LASER_INTENSITY] = int(
+            self._preferences[configurator.LASER_INTENSITY] = int(
                 self._laser_intensity_spinbox.get())
         else:
-            self._preferences[LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
+            self._preferences[configurator.LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
 
         if self._marker_radius_spinbox.get():
-            self._preferences[MARKER_RADIUS] = int(
+            self._preferences[configurator.MARKER_RADIUS] = int(
                 self._marker_radius_spinbox.get())
         else:
-            self._preferences[MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
+            self._preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
         if self._ignore_laser_color_combo.get():
-            self._preferences[IGNORE_LASER_COLOR] = self._ignore_laser_color_combo.get()
+            self._preferences[configurator.IGNORE_LASER_COLOR] = self._ignore_laser_color_combo.get()
         else:
-            self._preferences[IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
+            self._preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
 
-        self._config.set("ShootOFF", DETECTION_RATE, 
-            str(self._preferences[DETECTION_RATE]))
-        self._config.set("ShootOFF", LASER_INTENSITY,
-            str(self._preferences[LASER_INTENSITY]))
-        self._config.set("ShootOFF", MARKER_RADIUS,
-            str(self._preferences[MARKER_RADIUS]))
-        self._config.set("ShootOFF", IGNORE_LASER_COLOR,
-            self._preferences[IGNORE_LASER_COLOR])
+        self._config.set("ShootOFF", configurator.DETECTION_RATE, 
+            str(self._preferences[configurator.DETECTION_RATE]))
+        self._config.set("ShootOFF", configurator.LASER_INTENSITY,
+            str(self._preferences[configurator.LASER_INTENSITY]))
+        self._config.set("ShootOFF", configurator.MARKER_RADIUS,
+            str(self._preferences[configurator.MARKER_RADIUS]))
+        self._config.set("ShootOFF", configurator.IGNORE_LASER_COLOR,
+            self._preferences[configurator.IGNORE_LASER_COLOR])
 
         with open("settings.conf", "w") as config_file:
             self._config.write(config_file)
@@ -120,7 +117,7 @@ class PreferencesEditor():
             to=60000)
         self._detection_rate_spinbox.delete(0, Tkinter.END)
         self._detection_rate_spinbox.insert(0, 
-            self._preferences[DETECTION_RATE])
+            self._preferences[configurator.DETECTION_RATE])
         rate_validator = (self._window.register(self.check_detection_rate),'%P')
         self._detection_rate_spinbox.config(validate="key",
             validatecommand=rate_validator)
@@ -133,7 +130,7 @@ class PreferencesEditor():
             to=255)
         self._laser_intensity_spinbox.delete(0, Tkinter.END)
         self._laser_intensity_spinbox.insert(0, 
-            self._preferences[LASER_INTENSITY])
+            self._preferences[configurator.LASER_INTENSITY])
         intensity_validator = (self._window.register(self.check_laser_intensity),
             '%P')
         self._laser_intensity_spinbox.config(validate="key",
@@ -147,7 +144,7 @@ class PreferencesEditor():
             to=20)  
         self._marker_radius_spinbox.delete(0, Tkinter.END)
         self._marker_radius_spinbox.insert(0, 
-            self._preferences[MARKER_RADIUS])
+            self._preferences[configurator.MARKER_RADIUS])
         radius_validator = (self._window.register(self.check_marker_radius),'%P')
         self._marker_radius_spinbox.config(validate="key",
             validatecommand=radius_validator)
@@ -158,7 +155,7 @@ class PreferencesEditor():
 
         self._ignore_laser_color_combo = ttk.Combobox(self._frame, values=["none", "red", "green"],
             state="readonly")
-        self._ignore_laser_color_combo.set(self._preferences[IGNORE_LASER_COLOR])
+        self._ignore_laser_color_combo.set(self._preferences[configurator.IGNORE_LASER_COLOR])
         self._ignore_laser_color_combo.grid(column=1, row=3)
 
         self._ok_button = ttk.Button(self._frame, text="OK",
