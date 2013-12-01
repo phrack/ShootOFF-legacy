@@ -23,7 +23,7 @@ import time
 from training_protocols.protocol_operations import ProtocolOperations
 import sys
 from threading import Thread
-import Tkinter, tkMessageBox, ttk
+import Tkinter, tkFileDialog, tkMessageBox, ttk
 
 FEED_FPS = 30 #ms
 DEBUG = "debug"
@@ -397,6 +397,27 @@ class MainWindow:
         preferences_editor = PreferencesEditor(self._window, self._config,
             self._preferences)
 
+    def save_feed_image(self):
+        image_file = tkFileDialog.asksaveasfilename(
+            filetypes=[("Portable Network Graphics", ".png"), 
+                ("Encapsulated PostScript", ".eps"),
+                ("GIF", ".gif"), ("JPEG", ".jpeg")],
+            title="Save ShootOFF Webcam Feed",
+            parent=self._window)
+
+        file_name, extension = os.path.splitext(image_file)
+        
+        # The Tkinter canvas only supports saving its contents in postscript,
+        # so if the user wanted something different we should convert the 
+        # postscript file using PIL then delete the temporary postscript file.
+        if ".eps" not in extension:
+            self._webcam_canvas.postscript(file=(file_name + "tmp.eps"))
+            img = Image.open(file_name + "tmp.eps")
+            img.save(image_file, extension[1:]) 
+            os.remove(file_name + "tmp.eps")
+        else:
+            self._webcam_canvas.postscript(file=(file_name + ".eps"))
+
     def shot_time_selected(self, event):
         selected_shots = event.widget.focus()
         shot_index = event.widget.index(selected_shots)
@@ -459,6 +480,7 @@ class MainWindow:
     
         file_menu = Tkinter.Menu(menu_bar, tearoff=False)
         file_menu.add_command(label="Preferences", command=self.edit_preferences)
+        file_menu.add_command(label="Save Feed Image...", command=self.save_feed_image)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
         menu_bar.add_cascade(label="File", menu=file_menu)
