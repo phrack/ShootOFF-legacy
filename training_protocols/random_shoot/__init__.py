@@ -53,7 +53,7 @@ class RandomShoot(ITrainingProtocol):
         self._operations.say("shoot %s" % 
             self._subtarget_chain[self._subtarget_index])
 
-    def shot_listener(self, shot, is_hit):
+    def shot_listener(self, shot, shot_list_item, is_hit):
         if not self._subtarget_chain:
             return
 
@@ -62,7 +62,7 @@ class RandomShoot(ITrainingProtocol):
 
         return
 
-    def hit_listener(self, region, tags, shot):
+    def hit_listener(self, region, tags, shot, shot_list_item):
         if not self._subtarget_chain:
             return
 

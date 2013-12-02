@@ -8,12 +8,12 @@ class ITrainingProtocol():
         # protocol here.
         pass
 
-    def shot_listener(self, shot, is_hit):
+    def shot_listener(self, shot, shot_list_item, is_hit):
         # Called whenever a shot is detected. The shot may not have hit
         # a target: is_hit will be False for a miss or True for a hit 
         pass
 
-    def hit_listener(self, region, tags, shot):
+    def hit_listener(self, region, tags, shot, shot_list_item):
         # Called whenever a shot is detected that hit a target. Region is
         # the region that was hit and tags is a dictionary containing
         # all of region's tags in value = tags["tag_name"].

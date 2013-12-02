@@ -10,10 +10,12 @@ class ShootForScore(ITrainingProtocol):
         self._red_score = 0
         self._green_score = 0
 
-    def shot_listener(self, shot, is_hit):
+        self._operations.add_shot_list_columns(("Score",), [40])
+
+    def shot_listener(self, shot, shot_list_item, is_hit):
         return
 
-    def hit_listener(self, region, tags, shot):
+    def hit_listener(self, region, tags, shot, shot_list_item):
         if "points" in tags:
             if "red" in shot.get_color():
                 self._red_score += int(tags["points"])
@@ -30,6 +32,8 @@ class ShootForScore(ITrainingProtocol):
             elif self._green_score > 0:
                 message = "green score: %d" % self._green_score
 
+            self._operations.append_shot_item_values(shot_list_item,
+                (int(tags["points"]),))
             self._operations.show_text_on_feed(message)
 
     def reset(self):

@@ -19,6 +19,8 @@ class ProtocolOperations():
         self._shootoff = shootoff
         self._feed_text = self._canvas.create_text(1, 1, anchor="nw", fill="white")
         self._plugin_canvas_artifacts.append(self._feed_text)
+        self._added_columns = ()
+        self._added_column_widths = []
 
         self._tts_engine = pyttsx.init()
         # slow down the wpm rate otherwise they speek to fast
@@ -68,6 +70,26 @@ class ProtocolOperations():
         height = coords[3] - coords[1]
         return (width * height)
 
+    # new_columns is a tuple containing the names of the new columns to added
+    # widths is a list of each column's width in pixels. 
+    # it must be true that len(new_columns) == len(column_sizes)
+    def add_shot_list_columns(self, new_columns, widths):
+        self._added_columns += new_columns
+        if len(self._added_column_widths) == 0:
+            self._added_column_widths = widths
+        else:
+            self._added_column_widths += widths 
+
+        self._shootoff.add_shot_list_columns(new_columns)
+        self._shootoff.configure_default_shot_list_columns()
+        self._shootoff.configure_shot_list_columns(self._added_columns,
+            self._added_column_widths)               
+
+    # appends the tuple values the value tuple that already exists for item.
+    # This is how data is added by a training protocol to columns it added.
+    def append_shot_item_values(self, item, values):
+        self._shootoff.append_shot_list_column_data(item, values)
+
     def destroy(self):
         # pyttsx errors out if we try to end a loop that isn't running, so
         # we need to check if we are in a loop first, but the only good
@@ -81,6 +103,7 @@ class ProtocolOperations():
         elif not hasattr(self._tts_engine, "_inLoop"):
             self._tts_engine.endLoop()
         self.clear_canvas()
+        self.clear_protocol_shot_list_columns()
 
     def clear_shots(self):
         self._shootoff.clear_shots()
@@ -107,6 +130,10 @@ class ProtocolOperations():
     def clear_canvas(self):
         for artifact in self._plugin_canvas_artifacts:
             self._canvas.delete(artifact)
+
+    # Removes all traces of shot list columns/data added by the plugin
+    def clear_protocol_shot_list_columns(self):
+        self._shootoff.revert_shot_list_columns()
 
     # Play the sound in sound_file
     def play_sound(self, sound_file):

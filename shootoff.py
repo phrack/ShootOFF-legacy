@@ -28,6 +28,8 @@ FEED_FPS = 30 #ms
 SHOT_MARKER = "shot_marker"
 TARGET_VISIBILTY_MENU_INDEX = 3
 
+DEFAULT_SHOT_LIST_COLUMNS = ("Time", "Laser")
+
 class MainWindow:
     def refresh_frame(self, *args):
         rval, self._webcam_frame = self._cv.read()
@@ -150,6 +152,8 @@ class MainWindow:
         else:    
             timestamp = time.time() - self._shot_timer_start
 
+        tree_item = None
+
         if "green" in laser_color:
             tree_item = self._shot_timer_tree.insert("", "end", 
                 values=[timestamp, "green"])
@@ -167,7 +171,7 @@ class MainWindow:
         # Process the shot to see if we hit a region and perform
         # a training protocol specific action and any if we did
         # command tag actions if we did
-        self.process_hit(new_shot)
+        self.process_hit(new_shot, tree_item)
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh],[0],None,[256],[0,255])
@@ -214,7 +218,7 @@ class MainWindow:
 
         return None
 
-    def process_hit(self, shot):
+    def process_hit(self, shot, shot_list_item):
         is_hit = False
 
         x = shot.get_coords()[0]
@@ -232,7 +236,7 @@ class MainWindow:
                 self.execute_region_commands(tags["command"])
 
             if "_internal_name" in tags and self._loaded_training != None:
-                self._loaded_training.hit_listener(region, tags, shot)
+                self._loaded_training.hit_listener(region, tags, shot, shot_list_item)
 
             if "_internal_name" in tags:
                 is_hit = True
@@ -241,7 +245,7 @@ class MainWindow:
                 break
 
         if self._loaded_training != None: 
-            self._loaded_training.shot_listener(shot, is_hit)
+            self._loaded_training.shot_listener(shot, shot_list_item, is_hit)
 
     def open_target_editor(self):
         TargetEditor(self._frame, self._editor_image, 
@@ -427,6 +431,46 @@ class MainWindow:
 
         self._webcam_canvas.focus_set()
 
+    def configure_default_shot_list_columns(self):
+        self.configure_shot_list_columns(DEFAULT_SHOT_LIST_COLUMNS, [50, 50])
+
+    def add_shot_list_columns(self, id_list):
+        current_columns = self._shot_timer_tree.cget("columns")
+        if not current_columns:
+            self._shot_timer_tree.configure(columns=(id_list))
+        else:
+            self._shot_timer_tree.configure(columns=(current_columns + id_list))
+
+    def resize_shot_list(self):
+        self._shot_timer_tree.configure(displaycolumns="#all")
+
+    # This method removes all but the default columns for the shot list
+    def revert_shot_list_columns(self):
+        self._shot_timer_tree.configure(columns=DEFAULT_SHOT_LIST_COLUMNS)
+        self.configure_default_shot_list_columns()
+
+        shot_entries = self._shot_timer_tree.get_children() 
+        for shot in shot_entries:
+            current_values = self._shot_timer_tree.item(shot, "values")
+            default_values = current_values[0:len(DEFAULT_SHOT_LIST_COLUMNS)]
+            self._shot_timer_tree.item(shot, values=default_values)
+
+        self.resize_shot_list()
+
+    def configure_shot_list_columns(self, names, widths):
+        for name, width in zip(names, widths):
+            self.configure_shot_list_column(name, width)
+
+        self.resize_shot_list()
+
+    def append_shot_list_column_data(self, item, values):
+        current_values = self._shot_timer_tree.item(item, "values")
+        self._shot_timer_tree.item(item, values=(current_values+values))
+    
+    def configure_shot_list_column(self, name, width):
+        self._shot_timer_tree.heading(name, text=name)
+        self._shot_timer_tree.column(name, width=width, stretch=False)
+
     def build_gui(self, feed_dimensions=(600,480)):
         # Create the main window
         self._window = Tkinter.Tk()
@@ -456,17 +500,22 @@ class MainWindow:
         self._clear_shots_button.grid(row=1, column=0)
     
         # Create the shot timer tree
-        self._shot_timer_tree = ttk.Treeview(self._frame, columns=["time", "laser"], 
-            displaycolumns="#all", selectmode="browse", show="headings")
-        self._shot_timer_tree.heading("time", text="Time")
-        self._shot_timer_tree.heading("laser", text="Laser")
-        self._shot_timer_tree.column("time", width=50)
-        self._shot_timer_tree.column("laser", width=50)
-        tree_scroll = ttk.Scrollbar(self._frame, orient=Tkinter.VERTICAL, 
+        self._shot_timer_tree = ttk.Treeview(self._frame, selectmode="browse",
+            show="headings")
+        self.add_shot_list_columns(DEFAULT_SHOT_LIST_COLUMNS)
+        self.configure_default_shot_list_columns()
+
+        tree_scrolly = ttk.Scrollbar(self._frame, orient=Tkinter.VERTICAL, 
             command=self._shot_timer_tree.yview)
-        self._shot_timer_tree['yscroll'] = tree_scroll.set
+        self._shot_timer_tree['yscroll'] = tree_scrolly.set
+
+        tree_scrollx = ttk.Scrollbar(self._frame, orient=Tkinter.HORIZONTAL, 
+            command=self._shot_timer_tree.xview)
+        self._shot_timer_tree['xscroll'] = tree_scrollx.set
+
         self._shot_timer_tree.grid(row=0, column=1, rowspan=2, sticky=Tkinter.NSEW)
-        tree_scroll.grid(row=0, column=2, rowspan=2, stick=Tkinter.NS)  
+        tree_scrolly.grid(row=0, column=2, rowspan=2, stick=Tkinter.NS)  
+        tree_scrollx.grid(row=1, column=1, stick=Tkinter.EW) 
         self._shot_timer_tree.bind("<<TreeviewSelect>>", self.shot_time_selected)  
 
         self.create_menu()
