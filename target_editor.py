@@ -25,7 +25,7 @@ class TargetEditor():
             title="Save ShootOFF Target",
             parent=self._window)
 
-	is_new_target = target_file and not os.path.isfile(target_file)
+        is_new_target = target_file and not os.path.isfile(target_file)
 
         if target_file:
             target_pickler = TargetPickler()
@@ -85,7 +85,7 @@ class TargetEditor():
             # make a new one, thus leaving the current shape 
             # as a region
             self._regions.append(self._cursor_shape)
-            self._cursor_shape = None
+            self._create_cursor_shape(event)
         else:
             old_region = self._selected_region
             self._selected_region = event.widget.find_closest(
@@ -118,6 +118,9 @@ class TargetEditor():
         if self._radio_selection.get() == CURSOR:
             self._cursor_shape = None
 
+        self._create_cursor_shape(event)
+
+    def _create_cursor_shape(self, event):
         initial_size = 30
 
         if self._radio_selection.get() == RECTANGLE:        
