@@ -36,7 +36,7 @@ class ShootForScore(ITrainingProtocol):
                 (int(tags["points"]),))
             self._operations.show_text_on_feed(message)
 
-    def reset(self):
+    def reset(self, targets):
         self._red_score = 0
         self._green_score = 0
         self._operations.show_text_on_feed("score: 0")

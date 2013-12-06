@@ -11,6 +11,11 @@ class RandomShoot(ITrainingProtocol):
         self._subtarget_chain = None
         self._subtargets = []
 
+        if self.find_supported_target(targets):
+            self.pick_subtargets()
+            self.say_subtargets()       
+
+    def find_supported_target(self, targets): 
         found_target = False
 
         # Find the first target with subtargets and gets its regions
@@ -23,12 +28,12 @@ class RandomShoot(ITrainingProtocol):
                     self._subtargets.append(region["subtarget"])
                     found_target = True
 
-        if not found_target:
-            self._operations.say("This training protocol requires a target with subtargets")
+        if found_target and len(self._subtargets) > 0:
+            return True
         else:
-            self.pick_subtargets()
-            self.say_subtargets()
-             
+            self._operations.say("This training protocol requires a target with subtargets")
+            return False
+
     def pick_subtargets(self):
         # We want to choose a random number of subtargets from the chain
         # then pick that number of subtargets at random
@@ -75,9 +80,10 @@ class RandomShoot(ITrainingProtocol):
         else:
             self.say_current_subtarget()
 
-    def reset(self):
-        self.pick_subtargets()
-        self.say_subtargets()
+    def reset(self, targets):
+        if self.find_supported_target(targets):
+            self.pick_subtargets()
+            self.say_subtargets()
 
     def destroy(self):
         pass

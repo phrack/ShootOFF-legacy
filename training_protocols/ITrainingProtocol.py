@@ -19,8 +19,11 @@ class ITrainingProtocol():
         # all of region's tags in value = tags["tag_name"].
 	pass
 
-    def reset(self):
+    def reset(self, targets):
         # Reset the training protocols state to it's initial state.
+
+	# This method gets a fresh list of targets in case any targets
+	# have been added/removed since the protocol was initialized.
         pass
 
     def destroy(self):

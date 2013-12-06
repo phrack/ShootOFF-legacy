@@ -312,7 +312,7 @@ class MainWindow:
         self._shots = []
 
         if self._loaded_training != None:
-            self._loaded_training.reset()
+            self._loaded_training.reset(self.aggregate_targets())
 
         self._shot_timer_start = None
         shot_entries = self._shot_timer_tree.get_children() 
@@ -368,7 +368,7 @@ class MainWindow:
             self._protocol_operations.destroy()
             self._loaded_training = None
     
-    def load_training(self, plugin):
+    def aggregate_targets(self):
         # Create a list of targets, their regions, and the tags attached
         # to those regions so that the plugin can have a stock of what
         # can be shot
@@ -383,6 +383,11 @@ class MainWindow:
                 tags = TagParser.parse_tags(
                     self._webcam_canvas.gettags(region))
                 target_data["regions"].append(tags)
+
+        return targets
+
+    def load_training(self, plugin):
+        targets = self.aggregate_targets()
 
         if self._loaded_training:
             self._loaded_training.destroy()
