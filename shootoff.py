@@ -427,20 +427,23 @@ class MainWindow:
 
         if self.which("gs") is None:
             filetypes=[("Encapsulated PostScript", ".eps")]
+            defaultextension=".eps"
         else:
+            defaultextension=".png"
             filetypes=[("Portable Network Graphics", ".png"), 
                 ("Encapsulated PostScript", ".eps"),
                 ("GIF", ".gif"), ("JPEG", ".jpeg")]
 
         image_file = tkFileDialog.asksaveasfilename(
             filetypes=filetypes,
+            defaultextension=defaultextension,
             title="Save ShootOFF Webcam Feed",
             parent=self._window)
 
         if not image_file: return
 
         file_name, extension = os.path.splitext(image_file)
-        
+     
         # The Tkinter canvas only supports saving its contents in postscript,
         # so if the user wanted something different we should convert the 
         # postscript file using PIL then delete the temporary postscript file.
