@@ -25,13 +25,15 @@ class TargetEditor():
             title="Save ShootOFF Target",
             parent=self._window)
 
-        if (target_file and not os.path.isfile(target_file)):
-            self._notify_new_target(target_file)
+	is_new_target = target_file and not os.path.isfile(target_file)
 
         if target_file:
             target_pickler = TargetPickler()
             target_pickler.save(target_file, self._regions,
                 self._target_canvas)
+
+        if (is_new_target):
+            self._notify_new_target(target_file)
 
     def color_selected(self, event):
         self._target_canvas.focus_set()
