@@ -56,8 +56,9 @@ class Shot:
         self._is_selected = not self._is_selected 
         if self._is_selected:
             # Selected shots have cyan outlines
-            self._canvas.itemconfig(self._canvas_id, outline="gold")   
+            self._canvas.itemconfig(self._canvas_id, fill="gold", outline="gold")   
             self._canvas.tag_raise(self._canvas_id)
         else:
-            self._canvas.itemconfig(self._canvas_id, outline=self._marker_color)
+            self._canvas.itemconfig(self._canvas_id, fill=self._marker_color, 
+                outline=self._marker_color)
 
