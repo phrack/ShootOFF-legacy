@@ -424,13 +424,14 @@ class MainWindow:
         # If ghostscript is not installed, you can only save as an EPS.
         # This is because of the way images are saved (see below).
         filetypes = []
-
-        if self.which("gs") is None:
-            filetypes=[("Encapsulated PostScript", ".eps")]
+        
+        if (self.which("gs") is None and self.which("gswin32c.exe") is None
+            and self.which("gswin64c.exe") is None):
+            filetypes=[("Encapsulated PostScript", "*.eps")]
         else:
-           filetypes=[("Portable Network Graphics", ".png"), 
-                ("Encapsulated PostScript", ".eps"),
-                ("GIF", ".gif"), ("JPEG", ".jpeg")]
+           filetypes=[("Portable Network Graphics", "*.png"), 
+                ("Encapsulated PostScript", "*.eps"),
+                ("GIF", "*.gif"), ("JPEG", "*.jpeg")]
 
         image_file = tkFileDialog.asksaveasfilename(
             filetypes=filetypes,
@@ -447,8 +448,9 @@ class MainWindow:
         # PIL can only open an eps file is Ghostscript is installed.
         if ".eps" not in extension:
             self._webcam_canvas.postscript(file=(file_name + "tmp.eps"))
-            img = Image.open(file_name + "tmp.eps")
-            img.save(image_file, extension[1:]) 
+            img = Image.open(file_name + "tmp.eps", "r")
+            img.save(image_file, extension[1:])
+            del img
             os.remove(file_name + "tmp.eps")
         else:
             self._webcam_canvas.postscript(file=(file_name + ".eps"))
