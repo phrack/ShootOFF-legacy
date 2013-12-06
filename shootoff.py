@@ -427,16 +427,13 @@ class MainWindow:
 
         if self.which("gs") is None:
             filetypes=[("Encapsulated PostScript", ".eps")]
-            defaultextension=".eps"
         else:
-            defaultextension=".png"
-            filetypes=[("Portable Network Graphics", ".png"), 
+           filetypes=[("Portable Network Graphics", ".png"), 
                 ("Encapsulated PostScript", ".eps"),
                 ("GIF", ".gif"), ("JPEG", ".jpeg")]
 
         image_file = tkFileDialog.asksaveasfilename(
             filetypes=filetypes,
-            defaultextension=defaultextension,
             title="Save ShootOFF Webcam Feed",
             parent=self._window)
 
