@@ -403,19 +403,48 @@ class MainWindow:
         preferences_editor = PreferencesEditor(self._window, self._config_parser,
             self._preferences)
 
+    def which(self, program):
+        def is_exe(fpath):
+            return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+        fpath, fname = os.path.split(program)
+        if fpath:
+            if is_exe(program):
+                return program
+        else:
+            for path in os.environ["PATH"].split(os.pathsep):
+                path = path.strip('"')
+                exe_file = os.path.join(path, program)
+                if is_exe(exe_file):
+                    return exe_file
+
+        return None
+
     def save_feed_image(self):
-        image_file = tkFileDialog.asksaveasfilename(
+        # If ghostscript is not installed, you can only save as an EPS.
+        # This is because of the way images are saved (see below).
+        filetypes = []
+
+        if self.which("gs") is None:
+            filetypes=[("Encapsulated PostScript", ".eps")]
+        else:
             filetypes=[("Portable Network Graphics", ".png"), 
                 ("Encapsulated PostScript", ".eps"),
-                ("GIF", ".gif"), ("JPEG", ".jpeg")],
+                ("GIF", ".gif"), ("JPEG", ".jpeg")]
+
+        image_file = tkFileDialog.asksaveasfilename(
+            filetypes=filetypes,
             title="Save ShootOFF Webcam Feed",
             parent=self._window)
+
+        if not image_file: return
 
         file_name, extension = os.path.splitext(image_file)
         
         # The Tkinter canvas only supports saving its contents in postscript,
         # so if the user wanted something different we should convert the 
         # postscript file using PIL then delete the temporary postscript file.
+        # PIL can only open an eps file is Ghostscript is installed.
         if ".eps" not in extension:
             self._webcam_canvas.postscript(file=(file_name + "tmp.eps"))
             img = Image.open(file_name + "tmp.eps")
