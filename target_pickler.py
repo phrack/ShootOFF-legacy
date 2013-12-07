@@ -18,6 +18,8 @@ class TargetPickler():
                 "coords":region_coords,
                 "fill":region_fill})
 
+        print region_object
+
         target = open(target_file, 'wb')
         pickle.dump(region_object, target, pickle.HIGHEST_PROTOCOL)
         target.close()
@@ -62,6 +64,11 @@ class TargetPickler():
                     tags=raw_tags)
 
             if parsed_tags["_shape"] == "triangle":
+                shape = canvas.create_polygon(region["coords"],
+                    fill=region["fill"], outline="black",
+                    stipple="gray25", tags=raw_tags)
+
+            if parsed_tags["_shape"] == "freeform_polygon":
                 shape = canvas.create_polygon(region["coords"],
                     fill=region["fill"], outline="black",
                     stipple="gray25", tags=raw_tags)

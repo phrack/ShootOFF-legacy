@@ -7,12 +7,13 @@ import os
 from PIL import Image, ImageTk
 from tag_editor_popup import TagEditorPopup
 from target_pickler import TargetPickler
-import Tkinter, tkFileDialog, ttk
+import Tkinter, tkFileDialog, tkMessageBox, ttk
 
 CURSOR = 0
 RECTANGLE = 1
 OVAL = 2
 TRIANGLE = 3
+FREEFORM_POLYGON = 4
 
 CANVAS_BACKGROUND = (1,)
 
@@ -78,8 +79,71 @@ class TargetEditor():
 
         self._regions[r2], self._regions[r1] = self._regions[r1], self._regions[r2]
 
+    def undo_vertex(self, event):
+        if self._radio_selection.get() == FREEFORM_POLYGON:
+            # Remove the last vertex (if there is 
+            if len(self._freeform_vertices_ids) > 0:
+                self._target_canvas.delete(self._freeform_vertices_ids[-1])
+                del self._freeform_vertices_points[-1]
+                del self._freeform_vertices_ids[-1]           
+
+            # Remove the last edge (if there is one)
+            if len(self._freeform_edges_ids) > 0:
+                self._target_canvas.delete(self._freeform_edges_ids[-1])
+                del self._freeform_edges_ids[-1]
+
+            if self._freeform_temp_line_id is not None:
+                self._target_canvas.delete(self._freeform_temp_line_id)
+                self._freeform_temp_line_id = None
+
+    def _reset_freeform_polygon(self):
+        self._target_canvas.delete("_shape:vertex")
+        self._target_canvas.delete("_shape:freeform_edge")
+
+        self._freeform_vertices_points = []
+        self._freeform_vertices_ids = []
+        self._freeform_edges_ids = []
+        self._freeform_temp_line_id = None
+
+    def radio_button_click(self):
+        if self._radio_selection.get() != FREEFORM_POLYGON:
+            self._reset_freeform_polygon()
+
+    def canvas_right_click(self, event):
+        if self._radio_selection.get() == FREEFORM_POLYGON:
+            if len(self._freeform_vertices_points) < 4:
+                tkMessageBox.showerror("Invalid Regular Polygon",
+                    "A freeform polygon must have at least 3 vertices and should be " +
+                    "closed.",
+                    parent=self._frame)
+                return
+
+            # Make the last region the same as the first region, otherwise
+            # they might not line up
+            self._freeform_vertices_points[-1] = self._freeform_vertices_points[0]
+
+            # Create the new region
+            self._freeform_region = self._target_canvas.create_polygon(
+                self._freeform_vertices_points,
+                fill="black", outline="black", stipple="gray25",
+                tags=("_shape:freeform_polygon"))
+            self._regions.append(self._freeform_region)
+            self._create_cursor_shape(event)
+
+            # Delete all temporary data and shapes
+            self._reset_freeform_polygon()
+
     def canvas_click(self, event):
-        if self._radio_selection.get() != CURSOR:
+        if self._radio_selection.get() == FREEFORM_POLYGON:
+            self._freeform_vertices_points.append((event.x, event.y))
+            self._freeform_vertices_ids.append(self._cursor_shape)
+
+            if self._freeform_temp_line_id is not None:
+                self._freeform_edges_ids.append(self._freeform_temp_line_id)
+
+            self._create_cursor_shape(event)
+
+        elif self._radio_selection.get() != CURSOR:
             # This will make it so that mouse move event
             # won't delete the current cursor shape and will
             # make a new one, thus leaving the current shape 
@@ -114,6 +178,9 @@ class TargetEditor():
     def canvas_mouse_move(self, event):
         if self._cursor_shape is not None:
             self._target_canvas.delete(self._cursor_shape)
+
+        if self._freeform_temp_line_id is not None:
+            self._target_canvas.delete(self._freeform_temp_line_id)
         
         if self._radio_selection.get() == CURSOR:
             self._cursor_shape = None
@@ -151,6 +218,27 @@ class TargetEditor():
                 event.y - initial_size,
                 fill="black", outline="black", stipple="gray25",
                 tags=("_shape:triangle"))
+
+        elif self._radio_selection.get() == FREEFORM_POLYGON:     
+            # draw a vertex for the polygon
+            vertex_size = 2
+   
+            self._cursor_shape = self._target_canvas.create_oval(
+                event.x - vertex_size,
+                event.y - vertex_size,
+                event.x + vertex_size,
+                event.y + vertex_size, 
+                fill="black", tags=("_shape:vertex"))
+
+            # draw a dashed line between this vertex and the last
+            # vertex drawn
+            if len(self._freeform_vertices_points) > 0:
+                last_point = self._freeform_vertices_points[-1]
+
+                self._freeform_temp_line_id = self._target_canvas.create_line(
+                    last_point,
+                    event.x, event.y,
+                    dash=(4,4), tags="_shape:freeform_edge")
 
     def canvas_delete_region(self, event):
         if (self._selected_region is not None and
@@ -212,6 +300,8 @@ class TargetEditor():
         self._target_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._target_canvas.bind('<Motion>', self.canvas_mouse_move)
         self._target_canvas.bind('<Delete>', self.canvas_delete_region)
+        self._target_canvas.bind('<Control-z>', self.undo_vertex)
+        self._target_canvas.bind('<ButtonPress-3>', self.canvas_right_click)
 
         self._canvas_manager = CanvasManager(self._target_canvas)
 
@@ -249,6 +339,10 @@ class TargetEditor():
         self._triangle_icon = Image.open("images/triangle.png")
         self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
 
+        # freeform polygon button
+        self._freeform_polygon_icon = Image.open("images/freeform_polygon.png")
+        self.create_radio_button(toolbar, self._freeform_polygon_icon, FREEFORM_POLYGON)
+
         # bring forward button
         self._bring_forward_icon = Image.open("images/bring_forward.png")
         self.create_toolbar_button(toolbar, self._bring_forward_icon, 
@@ -285,7 +379,7 @@ class TargetEditor():
 
         button = Tkinter.Radiobutton(parent, image=icon,              
             indicatoron=False, variable=self._radio_selection,
-            value=selected_value)
+            value=selected_value, command=self.radio_button_click)
         button.image = icon
         button.pack(side=Tkinter.LEFT, padx=2, pady=2)
 
@@ -313,6 +407,10 @@ class TargetEditor():
         self._cursor_shape = None
         self._selected_region = None
         self._regions = []
+        self._freeform_vertices_points = []
+        self._freeform_vertices_ids = []
+        self._freeform_edges_ids = []
+        self._freeform_temp_line_id = None
         self.build_gui(parent, webcam_image)
 
         if target is not None:
