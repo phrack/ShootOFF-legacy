@@ -18,8 +18,6 @@ class TargetPickler():
                 "coords":region_coords,
                 "fill":region_fill})
 
-        print region_object
-
         target = open(target_file, 'wb')
         pickle.dump(region_object, target, pickle.HIGHEST_PROTOCOL)
         target.close()
