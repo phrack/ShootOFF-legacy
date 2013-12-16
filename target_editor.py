@@ -14,6 +14,9 @@ RECTANGLE = 1
 OVAL = 2
 TRIANGLE = 3
 FREEFORM_POLYGON = 4
+D_SILHOUETTE_3 = 5
+D_SILHOUETTE_4 = 6
+D_SILHOUETTE_5 = 7
 
 CANVAS_BACKGROUND = (1,)
 
@@ -189,6 +192,7 @@ class TargetEditor():
 
     def _create_cursor_shape(self, event):
         initial_size = 30
+        aqt_scale = 2.5
 
         if self._radio_selection.get() == RECTANGLE:        
             self._cursor_shape = self._target_canvas.create_rectangle(
@@ -218,6 +222,94 @@ class TargetEditor():
                 event.y - initial_size,
                 fill="black", outline="black", stipple="gray25",
                 tags=("_shape:triangle"))
+
+        elif self._radio_selection.get() == D_SILHOUETTE_3:        
+            self._cursor_shape = self._target_canvas.create_polygon(
+                event.x+15.083*aqt_scale,event.y+13.12*aqt_scale,
+                event.x+15.083*aqt_scale,event.y+-0.147*aqt_scale,
+                event.x+14.277*aqt_scale,event.y+-2.508*aqt_scale,
+                event.x+13.149*aqt_scale,event.y+-4.115*aqt_scale,
+                event.x+11.841*aqt_scale,event.y+-5.257*aqt_scale,
+                event.x+10.557*aqt_scale,event.y+-6.064*aqt_scale,
+                event.x+8.689*aqt_scale,event.y+-6.811*aqt_scale,
+                event.x+7.539*aqt_scale,event.y+-8.439*aqt_scale,
+                event.x+7.076*aqt_scale,event.y+-9.978*aqt_scale,
+                event.x+6.104*aqt_scale,event.y+-11.577*aqt_scale,
+                event.x+4.82*aqt_scale,event.y+-12.829*aqt_scale,
+                event.x+3.43*aqt_scale,event.y+-13.788*aqt_scale,
+                event.x+1.757*aqt_scale,event.y+-14.386*aqt_scale,
+                event.x+0.083*aqt_scale,event.y+-14.55*aqt_scale,
+                event.x+-1.59*aqt_scale,event.y+-14.386*aqt_scale,
+                event.x+-3.263*aqt_scale,event.y+-13.788*aqt_scale,
+                event.x+-4.653*aqt_scale,event.y+-12.829*aqt_scale,
+                event.x+-5.938*aqt_scale,event.y+-11.577*aqt_scale,
+                event.x+-6.909*aqt_scale,event.y+-9.978*aqt_scale,
+                event.x+-7.372*aqt_scale,event.y+-8.439*aqt_scale,
+                event.x+-8.522*aqt_scale,event.y+-6.811*aqt_scale,
+                event.x+-10.39*aqt_scale,event.y+-6.064*aqt_scale,
+                event.x+-11.674*aqt_scale,event.y+-5.257*aqt_scale,
+                event.x+-12.982*aqt_scale,event.y+-4.115*aqt_scale,
+                event.x+-14.11*aqt_scale,event.y+-2.508*aqt_scale,
+                event.x+-14.917*aqt_scale,event.y+-0.147*aqt_scale,
+                event.x+-14.917*aqt_scale,event.y+13.12*aqt_scale,
+                fill="black", outline="black", stipple="gray25",
+                tags=("_shape:aqt3"))
+
+        elif self._radio_selection.get() == D_SILHOUETTE_4:        
+            self._cursor_shape = self._target_canvas.create_polygon(
+                event.x+11.66*aqt_scale,event.y+5.51*aqt_scale,
+                event.x+11.595*aqt_scale,event.y+0.689*aqt_scale,
+                event.x+11.1*aqt_scale,event.y+-1.084*aqt_scale,
+                event.x+9.832*aqt_scale,event.y+-2.441*aqt_scale,
+                event.x+7.677*aqt_scale,event.y+-3.322*aqt_scale,
+                event.x+5.821*aqt_scale,event.y+-4.709*aqt_scale,
+                event.x+4.715*aqt_scale,event.y+-6.497*aqt_scale,
+                event.x+4.267*aqt_scale,event.y+-8.135*aqt_scale,
+                event.x+3.669*aqt_scale,event.y+-9.41*aqt_scale,
+                event.x+2.534*aqt_scale,event.y+-10.553*aqt_scale,
+                event.x+1.436*aqt_scale,event.y+-11.091*aqt_scale,
+                event.x+0.083*aqt_scale,event.y+-11.323*aqt_scale,
+                event.x+-1.269*aqt_scale,event.y+-11.091*aqt_scale,
+                event.x+-2.367*aqt_scale,event.y+-10.553*aqt_scale,
+                event.x+-3.502*aqt_scale,event.y+-9.41*aqt_scale,
+                event.x+-4.1*aqt_scale,event.y+-8.135*aqt_scale,
+                event.x+-4.548*aqt_scale,event.y+-6.497*aqt_scale,
+                event.x+-5.654*aqt_scale,event.y+-4.709*aqt_scale,
+                event.x+-7.51*aqt_scale,event.y+-3.322*aqt_scale,
+                event.x+-9.665*aqt_scale,event.y+-2.441*aqt_scale,
+                event.x+-10.933*aqt_scale,event.y+-1.084*aqt_scale,
+                event.x+-11.428*aqt_scale,event.y+0.689*aqt_scale,
+                event.x+-11.493*aqt_scale,event.y+5.51*aqt_scale,
+                fill="black", outline="black", stipple="gray25",
+                tags=("_shape:aqt4"))
+            
+        elif self._radio_selection.get() == D_SILHOUETTE_5:        
+            self._cursor_shape = self._target_canvas.create_polygon(
+                event.x+7.893*aqt_scale,event.y+3.418*aqt_scale,
+                event.x+7.893*aqt_scale,event.y+1.147*aqt_scale,
+                event.x+7.255*aqt_scale,event.y+0.331*aqt_scale,
+                event.x+5.622*aqt_scale,event.y+-0.247*aqt_scale,
+                event.x+4.187*aqt_scale,event.y+-1.124*aqt_scale,
+                event.x+2.833*aqt_scale,event.y+-2.339*aqt_scale,
+                event.x+1.917*aqt_scale,event.y+-3.594*aqt_scale,
+                event.x+1.219*aqt_scale,event.y+-5.048*aqt_scale,
+                event.x+0.9*aqt_scale,event.y+-6.223*aqt_scale,
+                event.x+0.801*aqt_scale,event.y+-7.1*aqt_scale,
+                event.x+0.521*aqt_scale,event.y+-7.558*aqt_scale,
+                event.x+0.083*aqt_scale,event.y+-7.617*aqt_scale,
+                event.x+-0.354*aqt_scale,event.y+-7.558*aqt_scale,
+                event.x+-0.634*aqt_scale,event.y+-7.1*aqt_scale,
+                event.x+-0.733*aqt_scale,event.y+-6.223*aqt_scale,
+                event.x+-1.052*aqt_scale,event.y+-5.048*aqt_scale,
+                event.x+-1.75*aqt_scale,event.y+-3.594*aqt_scale,
+                event.x+-2.666*aqt_scale,event.y+-2.339*aqt_scale,
+                event.x+-4.02*aqt_scale,event.y+-1.124*aqt_scale,
+                event.x+-5.455*aqt_scale,event.y+-0.247*aqt_scale,
+                event.x+-7.088*aqt_scale,event.y+0.331*aqt_scale,
+                event.x+-7.726*aqt_scale,event.y+1.147*aqt_scale,
+                event.x+-7.726*aqt_scale,event.y+3.418*aqt_scale,
+                fill="black", outline="black", stipple="gray25",
+                tags=("_shape:aqt5"))
 
         elif self._radio_selection.get() == FREEFORM_POLYGON:     
             # draw a vertex for the polygon
@@ -338,6 +430,22 @@ class TargetEditor():
         # triangle button
         self._triangle_icon = Image.open("images/triangle.png")
         self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
+
+        # triangle button
+        self._triangle_icon = Image.open("images/triangle.png")
+        self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
+
+        # Appleseed D Silhouette 3 button
+        self._d_silhouette_3_icon = Image.open("images/appleseed_d_silhouette_3.png")
+        self.create_radio_button(toolbar, self._d_silhouette_3_icon, D_SILHOUETTE_3)
+
+        # Appleseed D Silhouette 4 button
+        self._d_silhouette_4_icon = Image.open("images/appleseed_d_silhouette_4.png")
+        self.create_radio_button(toolbar, self._d_silhouette_4_icon, D_SILHOUETTE_4)
+        
+        # Appleseed D Silhouette 5 button
+        self._d_silhouette_5_icon = Image.open("images/appleseed_d_silhouette_5.png")
+        self.create_radio_button(toolbar, self._d_silhouette_5_icon, D_SILHOUETTE_5)
 
         # freeform polygon button
         self._freeform_polygon_icon = Image.open("images/freeform_polygon.png")
