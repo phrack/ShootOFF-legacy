@@ -36,14 +36,14 @@ class MainWindow:
 
         if (rval == False):
             self._refresh_miss_count += 1
-            logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF " +
+            self.logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF " +
                 "will stop processing shots.", self._refresh_miss_count)
 
             if self._refresh_miss_count >= 25:
                 tkMessageBox.showerror("Webcam Disconnected", "Missed too many " +
                     "webcam frames. The camera is probably disconnected so " +
                     "ShootOFF will stop processing shots.")
-                logger.critical("Missed %d webcam frames. The camera is probably " +
+                self.logger.critical("Missed %d webcam frames. The camera is probably " +
                     "disconnected so ShootOFF will stop processing shots.",
                     self._refresh_miss_count)
                 self._shutdown = True
@@ -134,7 +134,7 @@ class MainWindow:
             # If we couldn't detect a laser color, it's probably not a 
             # shot
             if (laser_color is not None and 
-                preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
+                self._preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
 
                 self.handle_shot(laser_color, x, y)
 
@@ -183,7 +183,7 @@ class MainWindow:
             # We will only warn about interference once each run
             self._seen_interference = True
 
-            logger.warning(
+            self.logger.warning(
                 "Glare or light source detected. %f of the image is dark." %
                 percent_dark)
 
@@ -327,11 +327,11 @@ class MainWindow:
         self._window.quit()
     
     def canvas_click_red(self, event):
-        if preferences[configurator.DEBUG]:
+        if self._preferences[configurator.DEBUG]:
             self.handle_shot("red", event.x, event.y)
 
     def canvas_click_green(self, event):
-        if preferences[configurator.DEBUG]:
+        if self._preferences[configurator.DEBUG]:
             self.handle_shot("green", event.x, event.y)
 
     def canvas_click(self, event):
@@ -524,7 +524,7 @@ class MainWindow:
         self._webcam_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._webcam_canvas.bind('<Delete>', self.canvas_delete_target)
         # Click to shoot
-        if preferences[configurator.DEBUG]:
+        if self._preferences[configurator.DEBUG]:
             self._webcam_canvas.bind('<Shift-ButtonPress-1>', self.canvas_click_red)
             self._webcam_canvas.bind('<Control-ButtonPress-1>', self.canvas_click_green)
 
@@ -624,7 +624,7 @@ class MainWindow:
                 command=self.callback_factory(self.load_training, plugin_info),
                 variable=self._training_selection, value=training_info["name"])
 
-    def __init__(self, config_parser, preferences):
+    def __init__(self, config):
         self._shots = []
         self._targets = []
         self._target_count = 0
@@ -635,10 +635,11 @@ class MainWindow:
         self._seen_interference = False
         self._show_interference = False
         self._webcam_frame = None
-        self._config_parser = config_parser
-        self._preferences = preferences
+        self._config_parser = config.get_config_parser()
+        self._preferences = config.get_preferences()
         self._shot_timer_start = None
         self._previous_shot_time_selection = None
+        self.logger = config.get_logger()
 
         self._cv = cv2.VideoCapture(0)
 
@@ -651,23 +652,23 @@ class MainWindow:
             # resolutions and opencv doesn't currently make it easy
             # to enumerate valid resolutions and switch to them
             if width < 640 and height < 480:
-                logger.info("Webcam resolution is current low (%dx%d), " + 
+                self.logger.info("Webcam resolution is current low (%dx%d), " + 
                     "attempting to increase it to 640x480", width, height)
                 self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 640)
                 self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
                 width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
                 height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)               
 
-            logger.debug("Webcam resolution is %dx%d", width, height) 
+            self.logger.debug("Webcam resolution is %dx%d", width, height) 
             self.build_gui((width, height))
             self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
             if fps <= 0:
-                logger.info("Couldn't get webcam FPS, defaulting to 30.")
+                self.logger.info("Couldn't get webcam FPS, defaulting to 30.")
             else: 
                 FEED_FPS = fps
-                logger.info("Feed FPS set to %d.", fps)
+                self.logger.info("Feed FPS set to %d.", fps)
 
             # Webcam related threads will end when this is true
             self._shutdown = False
@@ -685,7 +686,7 @@ class MainWindow:
             tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
                 "could not be initialized either because there is no webcam or " +
                 "we cannot connect to it. ShootOFF will shut down.")
-            logger.critical("Video capturing could not be initialized either " +
+            self.logger.critical("Video capturing could not be initialized either " +
                 "because there is no webcam or we cannot connect to it.")
             self._shutdown = True
 
@@ -703,5 +704,5 @@ if __name__ == "__main__":
     logger.debug(preferences)
 
     # Start the main window
-    mainWindow = MainWindow(config.get_config_parser(), preferences)
+    mainWindow = MainWindow(config)
     mainWindow.main()
