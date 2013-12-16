@@ -37,13 +37,12 @@ Linux (General)
 Mac
 -----------------------
 
-1. brew tap homebrew/science
-2. sudo brew tap homebrew/science
+1. Install Homebrew (http://brew.sh/)
+   $ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+2. brew tap homebrew/science
 3. brew install opencv
-4. export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
-5. sudo easy_install pip
-6. pip install numpy
-7. sudo pip install PIL pyttsx pyttk pyaudio
+4. brew install portaudio
+5. export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+6. sudo easy_install pip
+7. sudo pip install numpy pyobjc PIL pyttsx pyttk pyaudio
 8. python shootoff.py
-
-
