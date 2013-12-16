@@ -37,14 +37,14 @@ class MainWindow:
 
         if (rval == False):
             self._refresh_miss_count += 1
-            self.logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF " +
+            self._logger.debug ("Missed %d webcam frames. If we miss too many ShootOFF " +
                 "will stop processing shots.", self._refresh_miss_count)
 
             if self._refresh_miss_count >= 25:
                 tkMessageBox.showerror("Webcam Disconnected", "Missed too many " +
                     "webcam frames. The camera is probably disconnected so " +
                     "ShootOFF will stop processing shots.")
-                self.logger.critical("Missed %d webcam frames. The camera is probably " +
+                self._logger.critical("Missed %d webcam frames. The camera is probably " +
                     "disconnected so ShootOFF will stop processing shots.",
                     self._refresh_miss_count)
                 self._shutdown = True
@@ -183,7 +183,7 @@ class MainWindow:
             # We will only warn about interference once each run
             self._seen_interference = True
 
-            self.logger.warning(
+            self._logger.warning(
                 "Glare or light source detected. %f of the image is dark." %
                 percent_dark)
 
@@ -639,7 +639,7 @@ class MainWindow:
         self._preferences = config.get_preferences()
         self._shot_timer_start = None
         self._previous_shot_time_selection = None
-        self.logger = config.get_logger()
+        self._logger = config.get_logger()
 
         self._cv = cv2.VideoCapture(0)
 
@@ -652,23 +652,23 @@ class MainWindow:
             # resolutions and opencv doesn't currently make it easy
             # to enumerate valid resolutions and switch to them
             if width < 640 and height < 480:
-                self.logger.info("Webcam resolution is current low (%dx%d), " +
+                self._logger.info("Webcam resolution is current low (%dx%d), " +
                                  "attempting to increase it to 640x480", width, height)
                 self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 640)
                 self._cv.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
                 width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
                 height = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
 
-            self.logger.debug("Webcam resolution is %dx%d", width, height)
+            self._logger.debug("Webcam resolution is %dx%d", width, height)
             self.build_gui((width, height))
             self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
 
             fps = self._cv.get(cv2.cv.CV_CAP_PROP_FPS)
             if fps <= 0:
-                self.logger.info("Couldn't get webcam FPS, defaulting to 30.")
+                self._logger.info("Couldn't get webcam FPS, defaulting to 30.")
             else:
                 FEED_FPS = fps
-                self.logger.info("Feed FPS set to %d.", fps)
+                self._logger.info("Feed FPS set to %d.", fps)
 
             # Webcam related threads will end when this is true
             self._shutdown = False
@@ -686,7 +686,7 @@ class MainWindow:
             tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
                 "could not be initialized either because there is no webcam or " +
                 "we cannot connect to it. ShootOFF will shut down.")
-            self.logger.critical("Video capturing could not be initialized either " +
+            self._logger.critical("Video capturing could not be initialized either " +
                 "because there is no webcam or we cannot connect to it.")
             self._shutdown = True
 

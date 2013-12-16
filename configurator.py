@@ -39,6 +39,8 @@ class Configurator():
         return ignore_laser_color  
 
     def __init__(self):
+        self._logger = None
+
         # Load configuration information from the config file, which will
         # be over-ridden if settings are set on the command line
         config, preferences = PreferencesEditor.map_configuration()
@@ -87,6 +89,12 @@ class Configurator():
         return self._config_parser
 
     def get_logger(self):
+        if self._logger is None:
+            self._logger = self._make_logger()
+
+        return self._logger
+
+    def _make_logger(self):
         logger = logging.getLogger('shootoff')
         stdhandler = logging.StreamHandler(sys.stdout)
 
