@@ -322,6 +322,12 @@ class MainWindow:
         self._webcam_canvas.focus_set()
 
     def quit(self):
+        if self._loaded_training:
+            self._loaded_training.destroy()
+
+        if self._protocol_operations:
+            self._protocol_operations.destroy()
+
         self._shutdown = True
         self._cv.release()
         self._window.quit()
