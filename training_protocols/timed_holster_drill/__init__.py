@@ -13,7 +13,8 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._operations = protocol_operations
 
         self._operations.add_shot_list_columns(("Length",), [60])
-    
+        self._operations.pause_shot_detection(True)    
+
         self._parent = main_window
         self._operations.get_delayed_start_interval(self._parent, self.update_interval)
 
@@ -43,6 +44,7 @@ class TimedHolsterDrill(ITrainingProtocol):
 
         if (self._repeat_protocol):
             self._operations.play_sound("sounds/beep.wav")
+            self._operations.pause_shot_detection(False)
             self._beep_time = time.time()
             self.random_delay()
 
