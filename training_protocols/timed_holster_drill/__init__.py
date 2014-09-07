@@ -15,7 +15,7 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._operations.add_shot_list_columns(("Length",), [60])
     
         self._parent = main_window
-	self._operations.get_delayed_start_interval(self._parent, self.update_interval)
+        self._operations.get_delayed_start_interval(self._parent, self.update_interval)
 
         self._wait_event = threading.Event()
 
@@ -59,7 +59,7 @@ class TimedHolsterDrill(ITrainingProtocol):
 
     def reset(self, targets):        
         self._repeat_protocol = False
-	self._operations.get_delayed_start_interval(self._parent, self.update_interval)
+        self._operations.get_delayed_start_interval(self._parent, self.update_interval)
         self._repeat_protocol = True
 
         self._random_delay = Thread(target=self.random_delay,
@@ -68,7 +68,7 @@ class TimedHolsterDrill(ITrainingProtocol):
 
     def destroy(self):
         self._repeat_protocol = False
-	self._wait_event.set()
+        self._wait_event.set()
 
 def get_info():
     protocol_info = {}
