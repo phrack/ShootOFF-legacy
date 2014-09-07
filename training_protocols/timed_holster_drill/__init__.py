@@ -26,8 +26,8 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._setup_wait.start()
 
     def update_interval(self, new_min, new_max):
-        self._interval_min = int(new_min)
-        self._interval_max = int(new_max)
+        self._interval_min = new_min
+        self._interval_max = new_max
 
     def setup_wait(self):
         # Give the shooter 10 seconds to position themselves

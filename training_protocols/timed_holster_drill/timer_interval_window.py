@@ -6,8 +6,8 @@ import Tkinter, ttk
 
 class TimerIntervalWindow():
     def _ok_click(self):
-		self._notify_interval(self._min_spinbox.get(), self._max_spinbox.get())     
-		self._window.destroy()   
+        self._notify_interval(int(self._min_spinbox.get()), int(self._max_spinbox.get()))     
+        self._window.destroy()   
 
     def build_gui(self, parent):
         # Create the main window
