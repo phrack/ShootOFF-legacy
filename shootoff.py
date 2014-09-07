@@ -292,7 +292,7 @@ class MainWindow:
 
             # Run the commands
             if command == "clear_shots":
-                self.clear_shots()
+                self.clear_shots_click()
 
             if command == "play_sound":
                 self._protocol_operations.play_sound(args[0])
@@ -311,15 +311,18 @@ class MainWindow:
         self._webcam_canvas.delete(SHOT_MARKER)
         self._shots = []
 
-        if self._loaded_training != None:
-            self._loaded_training.reset(self.aggregate_targets())
-
         self._shot_timer_start = None
         shot_entries = self._shot_timer_tree.get_children()
         for shot in shot_entries: self._shot_timer_tree.delete(shot)
         self._previous_shot_time_selection = None
 
         self._webcam_canvas.focus_set()
+
+    def clear_shots_click(self):
+	self.clear_shots()
+
+        if self._loaded_training != None:
+            self._loaded_training.reset(self.aggregate_targets())
 
     def quit(self):
         if self._loaded_training:
@@ -538,7 +541,7 @@ class MainWindow:
 
         # Create a button to clear shots
         self._clear_shots_button = ttk.Button(
-            self._frame, text="Clear Shots", command=self.clear_shots)
+            self._frame, text="Clear Shots", command=self.clear_shots_click)
         self._clear_shots_button.grid(row=1, column=0)
 
         # Create the shot timer tree
