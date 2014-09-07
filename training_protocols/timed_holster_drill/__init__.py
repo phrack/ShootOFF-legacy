@@ -6,6 +6,7 @@ import random
 import threading
 from threading import Thread
 import time
+from training_protocols.timed_holster_drill.timer_interval_window import TimerIntervalWindow
 from training_protocols.ITrainingProtocol import ITrainingProtocol 
 
 class TimedHolsterDrill(ITrainingProtocol):
@@ -14,15 +15,19 @@ class TimedHolsterDrill(ITrainingProtocol):
 
         self._operations.add_shot_list_columns(("Length",), [60])
     
-        # TODO: Get interval for random delayed start instead of hardcoding it
-        self._interval_min = 4
-        self._interval_max = 8
+        self._parent = main_window
+        tiw = TimerIntervalWindow(main_window, self.update_interval)
+        main_window.wait_window(tiw._window)
 
         self._wait_event = threading.Event()
 
         self._setup_wait = Thread(target=self.setup_wait,
                                           name="setup_wait_thread")
         self._setup_wait.start()
+
+    def update_interval(self, new_min, new_max):
+        self._interval_min = int(new_min)
+        self._interval_max = int(new_max)
 
     def setup_wait(self):
         # Give the shooter 10 seconds to position themselves
@@ -54,9 +59,17 @@ class TimedHolsterDrill(ITrainingProtocol):
     def hit_listener(self, region, tags, shot, shot_list_item):
         pass
 
-    def reset(self, targets):
-        # TODO: Ask for the interval again
+    def reset(self, targets):        
         self._repeat_protocol = False
+
+        tiw = TimerIntervalWindow(self._parent, self.update_interval)
+        self._parent.wait_window(tiw._window)
+
+        self._repeat_protocol = True
+
+        self._random_delay = Thread(target=self.random_delay,
+                                          name="random_delay_thread")
+        self._random_delay.start()
 
     def destroy(self):
         self._repeat_protocol = False
