@@ -111,10 +111,6 @@ class ISSFStandardPistol(ITrainingProtocol):
      
         self._operations.show_text_on_feed("score: 0")
 
-        self._continue_protocol = False
-        self._operations.get_delayed_start_interval(self._parent, self.update_interval)
-        self._continue_protocol = True
-
         self._setup_wait = Thread(target=self.setup_wait,
                                           name="setup_wait_thread")
         self._setup_wait.start()
