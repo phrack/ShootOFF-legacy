@@ -6,7 +6,6 @@ import random
 import threading
 from threading import Thread
 import time
-from training_protocols.timed_holster_drill.timer_interval_window import TimerIntervalWindow
 from training_protocols.ITrainingProtocol import ITrainingProtocol 
 
 class TimedHolsterDrill(ITrainingProtocol):
@@ -16,8 +15,7 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._operations.add_shot_list_columns(("Length",), [60])
     
         self._parent = main_window
-        tiw = TimerIntervalWindow(main_window, self.update_interval)
-        main_window.wait_window(tiw._window)
+	self._operations.get_delayed_start_interval(self._parent, self.update_interval)
 
         self._wait_event = threading.Event()
 
@@ -61,10 +59,7 @@ class TimedHolsterDrill(ITrainingProtocol):
 
     def reset(self, targets):        
         self._repeat_protocol = False
-
-        tiw = TimerIntervalWindow(self._parent, self.update_interval)
-        self._parent.wait_window(tiw._window)
-
+	self._operations.get_delayed_start_interval(self._parent, self.update_interval)
         self._repeat_protocol = True
 
         self._random_delay = Thread(target=self.random_delay,

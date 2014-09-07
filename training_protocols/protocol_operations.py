@@ -5,6 +5,7 @@
 import pyaudio
 import pyttsx
 from threading import Thread
+from training_protocols.timer_interval_window import TimerIntervalWindow
 import wave
 
 LARGEST_REGION = 0
@@ -26,6 +27,13 @@ class ProtocolOperations():
         # slow down the wpm rate otherwise they speek to fast
         self._tts_engine.setProperty("rate", 150)
         self._tts_engine.startLoop(False)
+
+    # Shows a popup window that lets the user set the interval for a random start 
+    # delay in seconds. Notify interval points to a function that gets the min
+    # and max values for the interval as parameters.
+    def get_delayed_start_interval(self, parent, notifyinterval=None):
+        tiw = TimerIntervalWindow(parent, notifyinterval)
+        parent.wait_window(tiw._window)
 
     # Returns the centroid of a target using the specified mode:
     # LARGEST_REGION calculates the centroid of the target by calculating
