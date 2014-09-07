@@ -113,6 +113,9 @@ class ProtocolOperations():
         self.clear_canvas()
         self.clear_protocol_shot_list_columns()
 
+	# This clears shots without resetting the current protocol (it is
+	# identical to clicking the clear shots button aside from the protocol's
+	# reset method being called)
     def clear_shots(self):
         self._shootoff.clear_shots()
 
