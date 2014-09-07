@@ -142,7 +142,10 @@ class MainWindow:
             self._window.after(self._preferences[configurator.DETECTION_RATE],
                 self.detect_shots)
 
-    def handle_shot(self, laser_color, x, y):
+    def handle_shot(self, laser_color, x, y):	
+        if (self._pause_shot_detection):
+            return 
+
         timestamp = 0
 
         # Start the shot timer if it has not been started yet,
@@ -307,6 +310,9 @@ class MainWindow:
 
         self._show_targets = not self._show_targets
 
+    def pause_shot_detection(self, pause):
+        self._pause_shot_detection = pause
+
     def clear_shots(self):
         self._webcam_canvas.delete(SHOT_MARKER)
         self._shots = []
@@ -319,7 +325,7 @@ class MainWindow:
         self._webcam_canvas.focus_set()
 
     def clear_shots_click(self):
-	self.clear_shots()
+        self.clear_shots()
 
         if self._loaded_training != None:
             self._loaded_training.reset(self.aggregate_targets())
@@ -688,6 +694,7 @@ class MainWindow:
             self._refresh_thread.start()
 
             #Start the shot detection loop
+            self._pause_shot_detection = False
             self._shot_detection_thread = Thread(target=self.detect_shots,
                                                  name="shot_detection_thread")
             self._shot_detection_thread.start()

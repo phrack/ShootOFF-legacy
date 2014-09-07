@@ -112,10 +112,16 @@ class ProtocolOperations():
             self._tts_engine.endLoop()
         self.clear_canvas()
         self.clear_protocol_shot_list_columns()
+        self.pause_shot_detection(False)
 
-	# This clears shots without resetting the current protocol (it is
-	# identical to clicking the clear shots button aside from the protocol's
-	# reset method being called)
+    # If pause is set to true hit's won't register. If pause is set to false
+    # hits will register.
+    def pause_shot_detection(self, pause):
+        self._shootoff.pause_shot_detection(pause)
+
+    # This clears shots without resetting the current protocol (it is
+    # identical to clicking the clear shots button aside from the protocol's
+    # reset method being called)
     def clear_shots(self):
         self._shootoff.clear_shots()
 
