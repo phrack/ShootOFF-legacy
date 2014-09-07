@@ -33,15 +33,6 @@ class ISSFStandardPistol(ITrainingProtocol):
         self._interval_min = new_min
         self._interval_max = new_max
 
-    def update_check_shots_option(self, check_time):
-        AFTER_ROUND = 1
-        AFTER_EVENT = 2
-
-        if (check_time == AFTER_ROUND):
-            self._check_shots_after_round = True
-        else:
-            self._check_shots_after_round = False
-
     def setup_wait(self):
         # Give the shooter 10 seconds to position themselves
         self._wait_event.wait(10)
