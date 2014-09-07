@@ -13,7 +13,8 @@ class ISSFStandardPistol(ITrainingProtocol):
 
         self._operations.add_shot_list_columns(("Score", "Round"), [45, 70])        
         self._operations.pause_shot_detection(True)
-
+        
+        self._continue_protocol = True
         self._round_times = [150, 20, 10]
         self._round_time_index = 0
         self._round = 1    
@@ -37,10 +38,10 @@ class ISSFStandardPistol(ITrainingProtocol):
         # Give the shooter 10 seconds to position themselves
         self._wait_event.wait(10)
 
-        self._continue_protocol = True
-        self._start_round = Thread(target=self.start_round,
+        if (self._continue_protocol):
+            self._start_round = Thread(target=self.start_round,
                                           name="start_round_thread")
-        self._start_round.start()
+            self._start_round.start()
 
     def start_round(self):        
         self._shot_count = 0

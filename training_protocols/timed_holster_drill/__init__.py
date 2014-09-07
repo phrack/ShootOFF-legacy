@@ -15,6 +15,7 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._operations.add_shot_list_columns(("Length",), [60])
         self._operations.pause_shot_detection(True)    
 
+        self._repeat_protocol = True
         self._parent = main_window
         self._operations.get_delayed_start_interval(self._parent, self.update_interval)
 
@@ -33,10 +34,10 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._wait_event.wait(10)
         self._operations.say("Shooter... make ready")
 
-        self._repeat_protocol = True
-        self._random_delay = Thread(target=self.random_delay,
+        if (self._repeat_protocol):
+            self._random_delay = Thread(target=self.random_delay,
                                           name="random_delay_thread")
-        self._random_delay.start()
+            self._random_delay.start()
 
     def random_delay(self):
         random_delay = random.randrange(self._interval_min, self._interval_max)
@@ -53,8 +54,6 @@ class TimedHolsterDrill(ITrainingProtocol):
         # add it to the list
         draw_shot_length = time.time() - self._beep_time
         self._operations.append_shot_item_values(shot_list_item, (draw_shot_length,))
-
-        pass
 
     def hit_listener(self, region, tags, shot, shot_list_item):
         pass
