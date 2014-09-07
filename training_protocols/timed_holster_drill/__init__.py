@@ -73,6 +73,7 @@ class TimedHolsterDrill(ITrainingProtocol):
 
     def destroy(self):
         self._repeat_protocol = False
+	self._wait_event.set()
 
 def get_info():
     protocol_info = {}
