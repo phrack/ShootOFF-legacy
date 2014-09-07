@@ -5,7 +5,7 @@
 from training_protocols.ITrainingProtocol import ITrainingProtocol 
 
 class ShootForScore(ITrainingProtocol):
-    def __init__(self, protocol_operations, targets):
+    def __init__(self, main_window, protocol_operations, targets):
         self._operations = protocol_operations
         self._red_score = 0
         self._green_score = 0
@@ -58,5 +58,5 @@ def get_info():
 
     return protocol_info
 
-def load(protocol_operations, targets):
-    return ShootForScore(protocol_operations, targets)
+def load(main_window, protocol_operations, targets):
+    return ShootForScore(main_window, protocol_operations, targets)

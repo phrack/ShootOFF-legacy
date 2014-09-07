@@ -9,7 +9,7 @@ import time
 from training_protocols.ITrainingProtocol import ITrainingProtocol 
 
 class TimedHolsterDrill(ITrainingProtocol):
-    def __init__(self, protocol_operations, targets):
+    def __init__(self, main_window, protocol_operations, targets):
         self._operations = protocol_operations
 
         self._operations.add_shot_list_columns(("Length",), [60])
@@ -79,5 +79,5 @@ def get_info():
 
     return protocol_info
 
-def load(protocol_operations, targets):
-    return TimedHolsterDrill(protocol_operations, targets)
+def load(main_window, protocol_operations, targets):
+    return TimedHolsterDrill(main_window, protocol_operations, targets)

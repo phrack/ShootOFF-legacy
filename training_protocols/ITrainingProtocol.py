@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 class ITrainingProtocol():
-    def __init__(self, protocol_operations, targets):
+    def __init__(self, main_window, protocol_operations, targets):
         # Called when the training protocol is loaded. Initialize the training
         # protocol here.
         pass
@@ -41,5 +41,5 @@ def get_info():
 
     return protocol_info
 
-def load(protocol_operations, targets):
-    return ITrainingProtocol(protocol_operations, targets)
+def load(main_window, protocol_operations, targets):
+    return ITrainingProtocol(main_window, protocol_operations, targets)

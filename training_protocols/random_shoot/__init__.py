@@ -6,7 +6,7 @@ import random
 from training_protocols.ITrainingProtocol import ITrainingProtocol 
 
 class RandomShoot(ITrainingProtocol):
-    def __init__(self, protocol_operations, targets):
+    def __init__(self, main_window, protocol_operations, targets):
         self._operations = protocol_operations
         self._subtarget_chain = None
         self._subtargets = []
@@ -103,5 +103,5 @@ def get_info():
 
     return protocol_info
 
-def load(protocol_operations, targets):
-    return RandomShoot(protocol_operations, targets)
+def load(main_window, protocol_operations, targets):
+    return RandomShoot(main_window, protocol_operations, targets)

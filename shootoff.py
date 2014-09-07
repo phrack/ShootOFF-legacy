@@ -403,7 +403,7 @@ class MainWindow:
 
         self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
         self._loaded_training = imp.load_module("__init__", *plugin).load(
-            self._protocol_operations, targets)
+            self._window, self._protocol_operations, targets)
 
     def edit_preferences(self):
         preferences_editor = PreferencesEditor(self._window, self._config_parser,
