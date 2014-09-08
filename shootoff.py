@@ -471,14 +471,18 @@ class MainWindow:
             self._webcam_canvas.postscript(file=(file_name + ".eps"))
 
     def shot_time_selected(self, event):
-        selected_shots = event.widget.focus()
-        shot_index = event.widget.index(selected_shots)
-        self._shots[shot_index].toggle_selected()
+        selected_shots = event.widget.selection()
 
         if self._previous_shot_time_selection is not None:
-            self._previous_shot_time_selection.toggle_selected()
+            for shot in self._previous_shot_time_selection:
+                shot.toggle_selected()
 
-        self._previous_shot_time_selection = self._shots[shot_index]
+        self._previous_shot_time_selection = []
+
+        for shot in selected_shots:
+            shot_index = event.widget.index(shot)
+            self._shots[shot_index].toggle_selected()
+            self._previous_shot_time_selection.append(self._shots[shot_index])
 
         self._webcam_canvas.focus_set()
 
@@ -551,7 +555,7 @@ class MainWindow:
         self._clear_shots_button.grid(row=1, column=0)
 
         # Create the shot timer tree
-        self._shot_timer_tree = ttk.Treeview(self._frame, selectmode="browse",
+        self._shot_timer_tree = ttk.Treeview(self._frame, selectmode="extended",
                                              show="headings")
         self.add_shot_list_columns(DEFAULT_SHOT_LIST_COLUMNS)
         self.configure_default_shot_list_columns()
