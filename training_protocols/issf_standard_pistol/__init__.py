@@ -20,6 +20,10 @@ class ISSFStandardPistol(ITrainingProtocol):
         self._round = 1    
         self._shot_count = 0
         self._running_score = 0
+        self._session_scores = {}
+
+        for _time in self._round_times:
+            self._session_scores[_time] = 0
 
         self._parent = main_window
         self._operations.get_delayed_start_interval(self._parent, self.update_interval)
@@ -91,8 +95,16 @@ class ISSFStandardPistol(ITrainingProtocol):
         if "points" in tags:
             hit_score = int(tags["points"])
 
+            self._session_scores[self._round_times[self._round_time_index]] += hit_score
+
             self._running_score += hit_score
-            self._operations.show_text_on_feed("score: " + str(self._running_score))
+
+            message = ""
+    
+            for _time in self._round_times:
+                message += "%ss score: %d\n" % (_time, self._session_scores[_time])
+
+            self._operations.show_text_on_feed(message + "total score: " + str(self._running_score))
 
             current_round = "R" + str(self._round) + " (" + \
                 str(self._round_times[self._round_time_index]) + "s)"       
@@ -108,8 +120,11 @@ class ISSFStandardPistol(ITrainingProtocol):
         self._round = 1    
         self._shot_count = 0
         self._running_score = 0
+
+        for _time in self._round_times:
+            self._session_scores[_time] = 0
      
-        self._operations.show_text_on_feed("score: 0")
+        self._operations.show_text_on_feed("")
 
         self._setup_wait = Thread(target=self.setup_wait,
                                           name="setup_wait_thread")
