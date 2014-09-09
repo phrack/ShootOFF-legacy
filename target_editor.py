@@ -431,10 +431,6 @@ class TargetEditor():
         self._triangle_icon = Image.open("images/triangle.png")
         self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
 
-        # triangle button
-        self._triangle_icon = Image.open("images/triangle.png")
-        self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
-
         # Appleseed D Silhouette 3 button
         self._d_silhouette_3_icon = Image.open("images/appleseed_d_silhouette_3.png")
         self.create_radio_button(toolbar, self._d_silhouette_3_icon, D_SILHOUETTE_3)
