@@ -304,6 +304,12 @@ class MainWindow:
         if self._show_targets:
             self._targets_menu.entryconfig(TARGET_VISIBILTY_MENU_INDEX,
                 label="Show Targets")
+
+            # Unselected target when hiding because there is no point in
+            # a user moving or deleting a target they can't see.
+            self._canvas_manager.selection_update_listener(self._selected_target,
+                                                       None)
+            self._selected_target = None
         else:
             self._targets_menu.entryconfig(TARGET_VISIBILTY_MENU_INDEX,
                 label="Hide Targets")
