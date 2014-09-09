@@ -136,7 +136,8 @@ class ProtocolOperations():
     
     def _say(self, *args):
         self._tts_engine.say(args[0])
-        self._tts_engine.iterate()
+        if hasattr(self._tts_engine, "_inLoop") and self._tts_engine._inLoop:
+            self._tts_engine.iterate()
 
     # Show message as text on the top left corner of the webcam feed. The 
     # new message will over-write whatever was shown before
