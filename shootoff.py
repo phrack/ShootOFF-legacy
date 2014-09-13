@@ -324,8 +324,8 @@ class MainWindow:
                     args = match.groups()[1].split(",")
 
             # Run the commands
-            if command == "clear_shots":
-                self.clear_shots_click()
+            if command == "reset":
+                self.reset_click()
 
             if command == "play_sound":
                 self._protocol_operations.play_sound(args[0])
@@ -360,7 +360,7 @@ class MainWindow:
 
         self._webcam_canvas.focus_set()
 
-    def clear_shots_click(self):
+    def reset_click(self):
         self.clear_shots()
 
         if self._loaded_training != None:
@@ -585,10 +585,10 @@ class MainWindow:
 
         self._canvas_manager = CanvasManager(self._webcam_canvas)
 
-        # Create a button to clear shots
-        self._clear_shots_button = ttk.Button(
-            self._frame, text="Clear Shots", command=self.clear_shots_click)
-        self._clear_shots_button.grid(row=1, column=0)
+        # Create a button to clear shots and reset the current training protocol
+        self._reset_button = ttk.Button(
+            self._frame, text="Reset", command=self.reset_click)
+        self._reset_button.grid(row=1, column=0)
 
         # Create the shot timer tree
         self._shot_timer_tree = ttk.Treeview(self._frame, selectmode="extended",
