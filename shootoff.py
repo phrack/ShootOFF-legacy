@@ -30,7 +30,6 @@ TARGET_VISIBILTY_MENU_INDEX = 3
 
 DEFAULT_SHOT_LIST_COLUMNS = ("Time", "Laser")
 
-
 class MainWindow:
     def refresh_frame(self, *args):
         rval, self._webcam_frame = self._cv.read()
@@ -146,6 +145,8 @@ class MainWindow:
         if (self._pause_shot_detection):
             return 
 
+        self.update_virtual_magazine()
+
         timestamp = 0
 
         # Start the shot timer if it has not been started yet,
@@ -175,6 +176,17 @@ class MainWindow:
         # a training protocol specific action and any if we did
         # command tag actions if we did
         self.process_hit(new_shot, tree_item)
+
+    def update_virtual_magazine(self):
+        if self._preferences[configurator.USE_VIRTUAL_MAGAZINE]:
+            if self._virtual_magazine_rounds == -1:
+                self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
+
+            if self._virtual_magazine_rounds == 0:
+                self._protocol_operations.say("reload")
+                self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
+            else:
+                self._virtual_magazine_rounds -= 1
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh], [0], None, [256], [0, 255])
@@ -665,6 +677,7 @@ class MainWindow:
         self._shot_timer_start = None
         self._previous_shot_time_selection = None
         self._logger = config.get_logger()
+        self._virtual_magazine_rounds = -1
 
         self._cv = cv2.VideoCapture(0)
 

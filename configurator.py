@@ -8,6 +8,8 @@ DETECTION_RATE = "detectionrate" #ms
 LASER_INTENSITY = "laserintensity"
 MARKER_RADIUS = "markerradius"
 IGNORE_LASER_COLOR = "ignorelasercolor"
+USE_VIRTUAL_MAGAZINE = "usevirtualmagazine"
+VIRTUAL_MAGAZINE = "virtualmagazine"
 
 class Configurator():
     def _check_rate(self, rate):
@@ -38,6 +40,13 @@ class Configurator():
                 "equal to either \"green\" or \"red\" without quotes")
         return ignore_laser_color  
 
+    def _check_virtual_magazine(self, virtual_magazine):
+        value = int(virtual_magazine)
+        if value < 1 or value > 45:
+            raise argparse.ArgumentTypeError("VIRTUAL_MAGAZINE must be a number " +
+                "between 1 and 45")
+        return value
+
     def __init__(self):
         self._logger = None
 
@@ -63,6 +72,10 @@ class Configurator():
             type=self._check_ignore_laser_color,
             help="sets the color of laser that should be ignored by ShootOFF (green " +
                 "or red). No color is ignored by default")
+        parser.add_argument("-u", "--use-virtual-magazine",
+            type=self._check_virtual_magazine,
+            help="turns on the virtual magazine and sets the number rounds it holds")
+	
         args = parser.parse_args()
 
         preferences[DEBUG] = args.debug
@@ -78,6 +91,12 @@ class Configurator():
 
         if args.ignore_laser_color:
             preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
+
+        if args.use_virtual_magazine:
+            preferences[USE_VIRTUAL_MAGAZINE] = True
+            preferences[VIRTUAL_MAGAZINE] = args.use_virtual_magazine
+        else:
+            preferences[USE_VIRTUAL_MAGAZINE] = False
 
         self._preferences = preferences
         self._config_parser = config

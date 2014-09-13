@@ -11,6 +11,8 @@ DEFAULT_DETECTION_RATE = 100 #ms
 DEFAULT_LASER_INTENSITY = 230
 DEFAULT_MARKER_RADIUS = 2 #px
 DEFAULT_IGNORE_LASER_COLOR = "none"
+DEFAULT_USE_VIRTUAL_MAGAZINE = False
+DEFAULT_VIRTUAL_MAGAZINE = 7
 
 class PreferencesEditor():
     @staticmethod
@@ -34,7 +36,7 @@ class PreferencesEditor():
 
             try:
                 preferences[configurator.MARKER_RADIUS] = config.getint("ShootOFF",
-			configurator.MARKER_RADIUS)
+                    configurator.MARKER_RADIUS)
             except ConfigParser.NoOptionError:
                 preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
@@ -43,11 +45,25 @@ class PreferencesEditor():
                     configurator.IGNORE_LASER_COLOR)
             except ConfigParser.NoOptionError:
                 preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
+
+            try:
+                preferences[configurator.USE_VIRTUAL_MAGAZINE] = config.get("ShootOFF",
+                    configurator.USE_VIRTUAL_MAGAZINE)
+            except ConfigParser.NoOptionError:
+                preferences[configurator.USE_VIRTUAL_MAGAZINE] = DEFAULT_USE_VIRTUAL_MAGAZINE
+
+            try:
+                preferences[configurator.VIRTUAL_MAGAZINE] = config.get("ShootOFF",
+                    configurator.VIRTUAL_MAGAZINE)
+            except ConfigParser.NoOptionError:
+                preferences[configurator.VIRTUAL_MAGAZINE] = DEFAULT_VIRTUAL_MAGAZINE
         else:
             preferences[configurator.DETECTION_RATE] = DEFAULT_DETECTION_RATE
             preferences[configurator.LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
             preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
             preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
+            preferences[configurator.USE_VIRTUAL_MAGAZINE] = DEFAULT_USE_VIRTUAL_MAGAZINE
+            preferences[configurator.VIRTUAL_MAGAZINE] = DEFAULT_VIRTUAL_MAGAZINE
 
             config.add_section("ShootOFF")
             config.set("ShootOFF", configurator.DETECTION_RATE, 
@@ -57,7 +73,11 @@ class PreferencesEditor():
             config.set("ShootOFF", configurator.MARKER_RADIUS, 
                 str(preferences[configurator.MARKER_RADIUS]))
             config.set("ShootOFF", configurator.IGNORE_LASER_COLOR, 
-                preferences[configurator.IGNORE_LASER_COLOR])    
+                preferences[configurator.IGNORE_LASER_COLOR])  
+            config.set("ShootOFF", configurator.USE_VIRTUAL_MAGAZINE, 
+                preferences[configurator.USE_VIRTUAL_MAGAZINE])  
+            config.set("ShootOFF", configurator.VIRTUAL_MAGAZINE, 
+                preferences[configurator.VIRTUAL_MAGAZINE])    
 
             with open("settings.conf", "w") as config_file:
                 config.write(config_file)
@@ -88,6 +108,13 @@ class PreferencesEditor():
         else:
             self._preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
 
+        self._preferences[configurator.USE_VIRTUAL_MAGAZINE] = self._virtual_magazine_state.get()
+        if self._virtual_magazine_state.get() == True:
+            if self._virtual_magazine_spinbox.get():
+                self._preferences[configurator.VIRTUAL_MAGAZINE] = self._virtual_magazine_spinbox.get()
+            else:
+                self._preferences[configurator.VIRTUAL_MAGAZINE] = DEFAULT_VIRTUAL_MAGAZINE
+         
         self._config_parser.set("ShootOFF", configurator.DETECTION_RATE, 
             str(self._preferences[configurator.DETECTION_RATE]))
         self._config_parser.set("ShootOFF", configurator.LASER_INTENSITY,
@@ -96,11 +123,21 @@ class PreferencesEditor():
             str(self._preferences[configurator.MARKER_RADIUS]))
         self._config_parser.set("ShootOFF", configurator.IGNORE_LASER_COLOR,
             self._preferences[configurator.IGNORE_LASER_COLOR])
+        self._config_parser.set("ShootOFF", configurator.USE_VIRTUAL_MAGAZINE,
+             str(self._preferences[configurator.USE_VIRTUAL_MAGAZINE]))
+        self._config_parser.set("ShootOFF", configurator.VIRTUAL_MAGAZINE,
+             self._preferences[configurator.VIRTUAL_MAGAZINE])
 
         with open("settings.conf", "w") as config_file:
             self._config_parser.write(config_file)
 
         self._window.destroy()
+
+    def toggle_virtual_magazine(self):
+        if self._virtual_magazine_state.get() == True :
+            self._virtual_magazine_spinbox.configure(state=Tkinter.NORMAL)
+        else:
+            self._virtual_magazine_spinbox.configure(state=Tkinter.DISABLED)
 
     def build_gui(self, parent):
         self._window = Tkinter.Toplevel(parent)
@@ -158,12 +195,30 @@ class PreferencesEditor():
         self._ignore_laser_color_combo.set(self._preferences[configurator.IGNORE_LASER_COLOR])
         self._ignore_laser_color_combo.grid(column=1, row=3)
 
+        self._virtual_magazine_state = Tkinter.BooleanVar()
+        self._virtual_magazine_state.set(self._preferences[configurator.USE_VIRTUAL_MAGAZINE])   
+
+        self._use_virtual_magazine_button = Tkinter.Checkbutton(self._frame,
+            variable=self._virtual_magazine_state, text="Virtual Magazine",
+            command=self.toggle_virtual_magazine).grid(column=0, row=4)
+
+        self._virtual_magazine_spinbox = Tkinter.Spinbox(self._frame, from_=1,
+            to=45)  
+        self._virtual_magazine_spinbox.delete(0, Tkinter.END)
+        self._virtual_magazine_spinbox.insert(0, 
+            self._preferences[configurator.VIRTUAL_MAGAZINE])
+        virtual_magazine_validator = (self._window.register(self.check_virtual_magazine),'%P')
+        self._virtual_magazine_spinbox.config(validate="key",
+            validatecommand=virtual_magazine_validator)
+        self._virtual_magazine_spinbox.grid(column=1, row=4)  
+        self.toggle_virtual_magazine()
+
         self._ok_button = ttk.Button(self._frame, text="OK",
             command=self.save_preferences, width=10)
-        self._ok_button.grid(column=0, row=4)
+        self._ok_button.grid(column=0, row=5)
         self._cancel_button = ttk.Button(self._frame, text="Cancel",
             command=self._window.destroy, width=10)
-        self._cancel_button.grid(column=1, row=4)
+        self._cancel_button.grid(column=1, row=5)
 
         # Center this window on its parent
         parent_width = parent.winfo_width()
@@ -193,6 +248,12 @@ class PreferencesEditor():
 
     def check_marker_radius(self, P):
         if (P.isdigit() and int(P) >= 1 and int(P) <= 20) or not P:
+            return True
+        else:
+            return False
+
+    def check_virtual_magazine(self, P):
+        if (P.isdigit() and int(P) >= 1 and int(P) <= 45) or not P:
             return True
         else:
             return False
