@@ -13,6 +13,7 @@ import imp
 import numpy
 import os
 from PIL import Image, ImageTk
+import platform
 from preferences_editor import PreferencesEditor
 import random
 import re
@@ -565,6 +566,16 @@ class MainWindow:
     def build_gui(self, feed_dimensions=(640, 480)):
         # Create the main window
         self._window = Tkinter.Tk()
+
+        try:
+            if platform.system() == "Windows":            
+                self._window.iconbitmap("images\windows_icon.ico")
+            else:
+                icon_img = Tkinter.PhotoImage(file=os.path.join("images", "icon_48x48.png"))
+                self._window.tk.call('wm','iconphoto', self._window._w, icon_img)
+        except _tkinter.TclError:
+            pass
+
         self._window.protocol("WM_DELETE_WINDOW", self.quit)
         self._window.title("ShootOFF")
 
