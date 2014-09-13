@@ -413,49 +413,49 @@ class TargetEditor():
         # Save button
         self._save_icon = Image.open("images/gnome_media_floppy.png")
         self.create_toolbar_button(toolbar, self._save_icon, 
-            self.save_target)
+            self.save_target, "Save Target")
         
         # cursor button
         self._cursor_icon = Image.open("images/cursor.png")
-        self.create_radio_button(toolbar, self._cursor_icon, CURSOR)
+        self.create_radio_button(toolbar, self._cursor_icon, "Select Region", CURSOR)
 
         # rectangle button
         self._rectangle_icon = Image.open("images/rectangle.png")
-        self.create_radio_button(toolbar, self._rectangle_icon, RECTANGLE)
+        self.create_radio_button(toolbar, self._rectangle_icon, "Draw Rectangle", RECTANGLE)
 
         # oval button
         self._oval_icon = Image.open("images/oval.png")
-        self.create_radio_button(toolbar, self._oval_icon, OVAL)
+        self.create_radio_button(toolbar, self._oval_icon, "Draw Oval", OVAL)
 
         # triangle button
         self._triangle_icon = Image.open("images/triangle.png")
-        self.create_radio_button(toolbar, self._triangle_icon, TRIANGLE)
+        self.create_radio_button(toolbar, self._triangle_icon, "Draw Triangle", TRIANGLE)
 
         # Appleseed D Silhouette 3 button
         self._d_silhouette_3_icon = Image.open("images/appleseed_d_silhouette_3.png")
-        self.create_radio_button(toolbar, self._d_silhouette_3_icon, D_SILHOUETTE_3)
+        self.create_radio_button(toolbar, self._d_silhouette_3_icon, "Draw D Silhouette 3", D_SILHOUETTE_3)
 
         # Appleseed D Silhouette 4 button
         self._d_silhouette_4_icon = Image.open("images/appleseed_d_silhouette_4.png")
-        self.create_radio_button(toolbar, self._d_silhouette_4_icon, D_SILHOUETTE_4)
+        self.create_radio_button(toolbar, self._d_silhouette_4_icon, "Draw D Silhouette 4", D_SILHOUETTE_4)
         
         # Appleseed D Silhouette 5 button
         self._d_silhouette_5_icon = Image.open("images/appleseed_d_silhouette_5.png")
-        self.create_radio_button(toolbar, self._d_silhouette_5_icon, D_SILHOUETTE_5)
+        self.create_radio_button(toolbar, self._d_silhouette_5_icon, "Draw D Silhouette 5", D_SILHOUETTE_5)
 
         # freeform polygon button
         self._freeform_polygon_icon = Image.open("images/freeform_polygon.png")
-        self.create_radio_button(toolbar, self._freeform_polygon_icon, FREEFORM_POLYGON)
+        self.create_radio_button(toolbar, self._freeform_polygon_icon, "Draw Freeform Polygon", FREEFORM_POLYGON)
 
         # bring forward button
         self._bring_forward_icon = Image.open("images/bring_forward.png")
         self.create_toolbar_button(toolbar, self._bring_forward_icon, 
-            self.bring_forward)
+            self.bring_forward, "Bring Forward")
 
         # send backward button
         self._send_backward_icon = Image.open("images/send_backward.png")
         self.create_toolbar_button(toolbar, self._send_backward_icon, 
-            self.send_backward)
+            self.send_backward, "Send Backward")
 
         # show tags button
         tags_icon = ImageTk.PhotoImage(Image.open("images/tags.png"))  
@@ -466,6 +466,7 @@ class TargetEditor():
             command=self.toggle_tag_editor, state=Tkinter.DISABLED)
         self._tags_button.image = tags_icon
         self._tags_button.pack(side=Tkinter.LEFT, padx=2, pady=2)
+        self.create_tooltip(self._tags_button, "Edit Selected Region's Tags")
 
         # color chooser
         self._fill_color_combo = ttk.Combobox(toolbar,
@@ -475,10 +476,11 @@ class TargetEditor():
         self._fill_color_combo.bind("<<ComboboxSelected>>", self.color_selected)
         self._fill_color_combo.configure(state=Tkinter.DISABLED)
         self._fill_color_combo.pack(side=Tkinter.LEFT, padx=2, pady=2)
+        self.create_tooltip(self._fill_color_combo, "Set Selected Region's Fill Color")
 
         toolbar.pack(fill=Tkinter.X)
 
-    def create_radio_button(self, parent, image, selected_value):
+    def create_radio_button(self, parent, image, tooltip, selected_value):
         icon = ImageTk.PhotoImage(image)  
 
         button = Tkinter.Radiobutton(parent, image=icon,              
@@ -487,7 +489,9 @@ class TargetEditor():
         button.image = icon
         button.pack(side=Tkinter.LEFT, padx=2, pady=2)
 
-    def create_toolbar_button(self, parent, image, command, enabled=True):
+        self.create_tooltip(button, tooltip)
+
+    def create_toolbar_button(self, parent, image, command, tooltip, enabled=True):
         icon = ImageTk.PhotoImage(image)  
 
         button = Tkinter.Button(parent, image=icon, relief=Tkinter.RAISED, command=command)
@@ -497,6 +501,20 @@ class TargetEditor():
 
         button.image = icon
         button.pack(side=Tkinter.LEFT, padx=2, pady=2)
+
+        self.create_tooltip(button, tooltip)
+
+    def create_tooltip(self, widget, text):
+        toolTip = ToolTip(widget)
+
+        def enter(event):
+            toolTip.showtip(text)
+
+        def leave(event):
+            toolTip.hidetip()
+
+        widget.bind('<Enter>', enter)
+        widget.bind('<Leave>', leave)
 
     # target is set when we are editing a target,
     # otherwise we are creating a new target
@@ -523,3 +541,46 @@ class TargetEditor():
                 target, self._target_canvas)
 
         self._notify_new_target = notifynewfunc
+
+# From: http://www.voidspace.org.uk/python/weblog/arch_d7_2006_07_01.shtml
+
+# This is used instead of Tix because we'd have to convert every widget in the
+# editor to use Tix, but we some attributes (e.g. images) that aren't working right
+# with Tix in Ubuntu 14.04
+class ToolTip(object):
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 27
+        y = y + cy + self.widget.winfo_rooty() +27
+        self.tipwindow = tw = Tkinter.Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+
+        try:
+            # For Mac OS
+            tw.tk.call("::tk::unsupported::MacWindowStyle",
+                       "style", tw._w,
+                       "help", "noActivates")
+        except Tkinter.TclError:
+            pass
+
+        label = Tkinter.Label(tw, text=self.text, justify=Tkinter.LEFT,
+                      background="#ffffe0", relief=Tkinter.SOLID, borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
