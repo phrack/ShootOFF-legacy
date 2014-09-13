@@ -606,7 +606,7 @@ class MainWindow:
 
         self._shot_timer_tree.grid(row=0, column=1, rowspan=2, sticky=Tkinter.NSEW)
         tree_scrolly.grid(row=0, column=2, rowspan=2, stick=Tkinter.NS)
-        tree_scrollx.grid(row=1, column=1, stick=Tkinter.EW)
+        tree_scrollx.grid(row=2, column=1, stick=Tkinter.EW)
         self._shot_timer_tree.bind("<<TreeviewSelect>>", self.shot_time_selected)
 
         self.create_menu()
