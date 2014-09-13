@@ -562,7 +562,7 @@ class MainWindow:
         self._shot_timer_tree.heading(name, text=name)
         self._shot_timer_tree.column(name, width=width, stretch=False)
 
-    def build_gui(self, feed_dimensions=(600, 480)):
+    def build_gui(self, feed_dimensions=(640, 480)):
         # Create the main window
         self._window = Tkinter.Tk()
         self._window.protocol("WM_DELETE_WINDOW", self.quit)
@@ -573,7 +573,7 @@ class MainWindow:
 
         # Create the container for our webcam image
         self._webcam_canvas = Tkinter.Canvas(self._frame,
-            width=feed_dimensions[0], height=feed_dimensions[1])
+            width=feed_dimensions[0]-1, height=feed_dimensions[1]-1)
         self._webcam_canvas.grid(row=0, column=0)
 
         self._webcam_canvas.bind('<ButtonPress-1>', self.canvas_click)
