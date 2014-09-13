@@ -14,6 +14,7 @@ import numpy
 import os
 from PIL import Image, ImageTk
 from preferences_editor import PreferencesEditor
+import random
 import re
 from shot import Shot
 from tag_parser import TagParser
@@ -145,7 +146,11 @@ class MainWindow:
         if (self._pause_shot_detection):
             return 
 
-        self.update_virtual_magazine()
+        if self.update_virtual_magazine():
+            return
+
+        if self.malfunction():
+            return
 
         timestamp = 0
 
@@ -185,8 +190,21 @@ class MainWindow:
             if self._virtual_magazine_rounds == 0:
                 self._protocol_operations.say("reload")
                 self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
+
+                return True
             else:
                 self._virtual_magazine_rounds -= 1
+
+        return False
+
+    def malfunction(self):
+        if self._preferences[configurator.USE_MALFUNCTIONS]:
+            if random.random() < self._preferences[configurator.MALFUNCTION_PROBABILITY] / 100:
+                self._protocol_operations.say("malfunction")
+                
+                return True
+
+        return False
 
     def detect_interfence(self, image_thresh):
         brightness_hist = cv2.calcHist([image_thresh], [0], None, [256], [0, 255])

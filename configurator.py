@@ -10,6 +10,8 @@ MARKER_RADIUS = "markerradius"
 IGNORE_LASER_COLOR = "ignorelasercolor"
 USE_VIRTUAL_MAGAZINE = "usevirtualmagazine"
 VIRTUAL_MAGAZINE = "virtualmagazine"
+USE_MALFUNCTIONS = "usemalfunctions"
+MALFUNCTION_PROBABILITY = "malfunctionprobability"
 
 class Configurator():
     def _check_rate(self, rate):
@@ -47,6 +49,13 @@ class Configurator():
                 "between 1 and 45")
         return value
 
+    def _check_malfunctions(self, malfunctions):
+        value = float(malfunctions)
+        if value < .1 or value > 99.9:
+            raise argparse.ArgumentTypeError("MALFUNCTIONS_PROBABILITY must be a number " +
+                "between .1 and 99.9")
+        return value
+
     def __init__(self):
         self._logger = None
 
@@ -75,28 +84,33 @@ class Configurator():
         parser.add_argument("-u", "--use-virtual-magazine",
             type=self._check_virtual_magazine,
             help="turns on the virtual magazine and sets the number rounds it holds")
+        parser.add_argument("-f", "--use-malfunctions",
+            type=self._check_malfunctions,
+            help="turns on malfunctions and sets the probability of them happening")
 	
         args = parser.parse_args()
 
         preferences[DEBUG] = args.debug
 
         if args.detection_rate:
-            preferences[DETECTION_RATE] = args.detection_rate
+            preferences[DETECTION_RATE] = int(args.detection_rate)
 
         if args.laser_intensity:
-            preferences[LASER_INTENSITY] = args.laser_intensity
+            preferences[LASER_INTENSITY] = int(args.laser_intensity)
 
         if args.marker_radius:
-            preferences[MARKER_RADIUS] = args.marker_radius
+            preferences[MARKER_RADIUS] = int(args.marker_radius)
 
         if args.ignore_laser_color:
             preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
 
         if args.use_virtual_magazine:
             preferences[USE_VIRTUAL_MAGAZINE] = True
-            preferences[VIRTUAL_MAGAZINE] = args.use_virtual_magazine
-        else:
-            preferences[USE_VIRTUAL_MAGAZINE] = False
+            preferences[VIRTUAL_MAGAZINE] = int(args.use_virtual_magazine)
+
+        if args.use_malfunctions:
+            preferences[USE_MALFUNCTIONS] = True
+            preferences[MALFUNCTION_PROBABILITY] = float(args.use_malfunctions)
 
         self._preferences = preferences
         self._config_parser = config
