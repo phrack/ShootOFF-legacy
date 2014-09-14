@@ -263,7 +263,7 @@ class PreferencesEditor():
         self._malfunctions_state.set(self._preferences[configurator.USE_MALFUNCTIONS])   
 
         self._use_malfunctions_button = Tkinter.Checkbutton(self._frame,
-            variable=self._malfunctions_state, text="Inject Malfunctions",
+            variable=self._malfunctions_state, text="Inject Malfunctions (%)",
             onvalue=True, offvalue=False,
             command=self.toggle_malfunctions).grid(column=0, row=5)
 
