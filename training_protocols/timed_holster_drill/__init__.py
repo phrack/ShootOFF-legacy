@@ -34,7 +34,7 @@ class TimedHolsterDrill(ITrainingProtocol):
         self._wait_event.wait(10)
         self._operations.say("Shooter... make ready")
 
-        if (self._repeat_protocol):
+        if self._repeat_protocol:
             self._random_delay = Thread(target=self.random_delay,
                                           name="random_delay_thread")
             self._random_delay.start()
@@ -43,7 +43,7 @@ class TimedHolsterDrill(ITrainingProtocol):
         random_delay = random.randrange(self._interval_min, self._interval_max)
         self._wait_event.wait(random_delay)
 
-        if (self._repeat_protocol):
+        if self._repeat_protocol:
             self._operations.play_sound("sounds/beep.wav")
             self._operations.pause_shot_detection(False)
             self._beep_time = time.time()
@@ -60,8 +60,10 @@ class TimedHolsterDrill(ITrainingProtocol):
 
     def reset(self, targets):        
         self._repeat_protocol = False
+        self._wait_event.set()
         self._operations.get_delayed_start_interval(self._parent, self.update_interval)
         self._repeat_protocol = True
+        self._wait_event.clear()
 
         self._random_delay = Thread(target=self.random_delay,
                                           name="random_delay_thread")

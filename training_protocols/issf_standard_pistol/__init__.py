@@ -29,6 +29,7 @@ class ISSFStandardPistol(ITrainingProtocol):
         self._operations.get_delayed_start_interval(self._parent, self.update_interval)
 
         self._wait_event = threading.Event()
+        self._event_ended = threading.Event()
 
         self._setup_wait = Thread(target=self.setup_wait,
                                           name="setup_wait_thread")
@@ -42,7 +43,7 @@ class ISSFStandardPistol(ITrainingProtocol):
         # Give the shooter 10 seconds to position themselves
         self._wait_event.wait(10)
 
-        if (self._continue_protocol):
+        if self._continue_protocol:
             self._start_round = Thread(target=self.start_round,
                                           name="start_round_thread")
             self._start_round.start()
@@ -53,14 +54,14 @@ class ISSFStandardPistol(ITrainingProtocol):
 
         random_delay = random.randrange(self._interval_min, self._interval_max)
         self._wait_event.wait(random_delay)
-
-        if (self._continue_protocol):
+        
+        if self._continue_protocol:
             self._operations.play_sound("sounds/beep.wav")
             self._operations.pause_shot_detection(False)
             self._wait_event.wait(self._round_times[self._round_time_index])
             self._operations.pause_shot_detection(True)
            
-        if (self._continue_protocol):
+        if self._continue_protocol:
             self._operations.say("Round over")
 
             if (self._round < 4):
@@ -75,6 +76,9 @@ class ISSFStandardPistol(ITrainingProtocol):
             else:
                 self._operations.say("Event over... Your score is " + str(self._running_score))
                 # At this point we end and the user has to hit clear shots to start again
+
+        if not self._continue_protocol:
+            self._event_ended.set()
                 
     def shot_listener(self, shot, shot_list_item, is_hit):
         self._shot_count += 1
@@ -112,10 +116,10 @@ class ISSFStandardPistol(ITrainingProtocol):
             self._operations.append_shot_item_values(shot_list_item,
                 (hit_score, current_round))
 
-    def reset(self, targets):   
+    def reset(self, targets): 
+        self._continue_protocol = False  
         self._wait_event.set()
-        self._wait_event.clear()
-
+       
         self._round_time_index = 0
         self._round = 1    
         self._shot_count = 0
@@ -125,6 +129,12 @@ class ISSFStandardPistol(ITrainingProtocol):
             self._session_scores[_time] = 0
      
         self._operations.show_text_on_feed("")
+
+        self._event_ended.wait(1)
+        self._event_ended.clear()
+
+        self._continue_protocol = True
+        self._wait_event.clear()
 
         self._setup_wait = Thread(target=self.setup_wait,
                                           name="setup_wait_thread")
