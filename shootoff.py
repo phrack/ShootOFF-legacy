@@ -15,6 +15,7 @@ import os
 from PIL import Image, ImageTk
 import platform
 from preferences_editor import PreferencesEditor
+from projector_arena import ProjectorArena
 import random
 import re
 from shot import Shot
@@ -563,6 +564,33 @@ class MainWindow:
         self._shot_timer_tree.heading(name, text=name)
         self._shot_timer_tree.column(name, width=width, stretch=False)
 
+    def open_projector_arena(self):
+        self._projector_arena = ProjectorArena(self._window)
+
+        self._projector_calibrate = True
+        self._projector_arena.calibrate()
+
+        xx = self._webcam_frame
+
+        bw = cv2.cvtColor(xx, cv2.cv.CV_BGR2GRAY)
+        (thresh, bw_image) = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
+        
+        contours,h = cv2.findContours(bw_image, cv2.cv.CV_RETR_EXTERNAL,
+                        cv2.cv.CV_CHAIN_APPROX_SIMPLE)
+        
+        print contours
+
+        for cnt in contours:
+            approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+        
+            cv2.drawContours(xx, [cnt], 0, (0,255,0), -1)
+
+            print len(approx)
+
+        cv2.imshow('img', xx)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
     def build_gui(self, feed_dimensions=(640, 480)):
         # Create the main window
         self._window = Tkinter.Tk()
@@ -658,6 +686,11 @@ class MainWindow:
         self.create_training_list(training_menu, self.load_training)
         menu_bar.add_cascade(label="Training", menu=training_menu)
 
+        # Create projector menu
+        projector_menu = Tkinter.Menu(menu_bar, tearoff=False)
+        projector_menu.add_command(label="Start Arena", command=self.open_projector_arena)
+        menu_bar.add_cascade(label="Projector", menu=projector_menu)
+
     def callback_factory(self, func, name):
         return lambda: func(name)
 
@@ -707,6 +740,8 @@ class MainWindow:
         self._previous_shot_time_selection = None
         self._logger = config.get_logger()
         self._virtual_magazine_rounds = -1
+        self._projector_calibrate = False
+        self._projector_calibrated = False
 
         self._cv = cv2.VideoCapture(0)
 
