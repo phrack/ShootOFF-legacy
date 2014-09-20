@@ -18,9 +18,14 @@ class ProjectorArena():
 
     def calibrate(self, calibration=True):
         if calibration:
-            self._arena_canvas.create_polygon(0, 0, 10, 0, 5, 10, 0, 0, fill="green", tags=("top_left_calibrator"))
+            x = self._window.winfo_screenwidth()
+            y = self._window.winfo_screenheight()
+
+            self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, fill="green", tags=("top_left_calibrator"))
+            self._arena_canvas.create_rectangle(x-250, y-125, x, y, fill="red", tags=("bottom_right_calibrator"))
         else:
             self._arena_canvas.delete("top_left_calibrator") 
+            self._arena_canvas.delete("bottom_right_calibrator") 
 
     def build_gui(self, parent):
         self._window = Tkinter.Toplevel(parent)
