@@ -16,6 +16,7 @@ from PIL import Image, ImageTk
 import platform
 from preferences_editor import PreferencesEditor
 from projector_arena import ProjectorArena
+from projector_calibrator import ProjectorCalibrator
 import random
 import re
 from shot import Shot
@@ -30,6 +31,9 @@ import Tkinter, tkFileDialog, tkMessageBox, ttk
 FEED_FPS = 30  # ms
 SHOT_MARKER = "shot_marker"
 TARGET_VISIBILTY_MENU_INDEX = 3
+
+PROJECTOR_ARENA_MENU_INDEX = 0
+PROJECTOR_CALIBRATE_MENU_INDEX = 1
 
 DEFAULT_SHOT_LIST_COLUMNS = ("Time", "Laser")
 
@@ -61,6 +65,9 @@ class MainWindow:
         #OpenCV reads the frame in BGR, but PIL uses RGB, so we if we don't
         #convert it, the colors will be off.
         webcam_image = cv2.cvtColor(self._webcam_frame, cv2.cv.CV_BGR2RGB)
+
+        if self._calibrate_projector:
+            webcam_image = self._projector_calibrator.calibrate_projector(webcam_image)
 
         # If the shot detector saw interference, we need to show it now
         if self._show_interference:
@@ -280,7 +287,7 @@ class MainWindow:
                 break
 
         if self._loaded_training != None:
-            self._loaded_training.shot_listener(shot, shot_list_item, is_hit)
+            self._loaded_training.shot_listener(shot, shot_list_item, is_hit)   
 
     def open_target_editor(self):
         TargetEditor(self._frame, self._editor_image,
@@ -565,31 +572,43 @@ class MainWindow:
         self._shot_timer_tree.column(name, width=width, stretch=False)
 
     def open_projector_arena(self):
-        self._projector_arena = ProjectorArena(self._window)
+        self._projector_arena = ProjectorArena(self._window, self)
+        self.calibrate_projector()
 
-        self._projector_calibrate = True
-        self._projector_arena.calibrate()
+        self.toggle_projector_menus(True)
 
-        xx = self._webcam_frame
+    def calibrate_projector(self):
+        self._calibrate_projector = not self._calibrate_projector
 
-        bw = cv2.cvtColor(xx, cv2.cv.CV_BGR2GRAY)
-        (thresh, bw_image) = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
-        
-        contours,h = cv2.findContours(bw_image, cv2.cv.CV_RETR_EXTERNAL,
-                        cv2.cv.CV_CHAIN_APPROX_SIMPLE)
-        
-        print contours
+        self._projector_arena.calibrate(self._calibrate_projector)
 
-        for cnt in contours:
-            approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-        
-            cv2.drawContours(xx, [cnt], 0, (0,255,0), -1)
+        if self._calibrate_projector:
+            self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
+                label="Stop Calibrating")
 
-            print len(approx)
+            self._projector_calibrated = True
+        else:
+            self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX,
+                label="Calibrate")
 
-        cv2.imshow('img', xx)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    def toggle_projector_menus(self, state=True):
+        if state:
+            self._projector_menu.entryconfig(PROJECTOR_ARENA_MENU_INDEX, 
+                state=Tkinter.DISABLED)
+            self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
+                state=Tkinter.NORMAL)
+        else:
+            self._projector_menu.entryconfig(PROJECTOR_ARENA_MENU_INDEX, 
+                state=Tkinter.NORMAL)
+            self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
+                state=Tkinter.DISABLED)
+
+    def projector_arena_closed(self):
+        if self._calibrate_projector:
+            self.calibrate_projector()
+
+        self.toggle_projector_menus(False)
+        self._projector_calibrated = False        
 
     def build_gui(self, feed_dimensions=(640, 480)):
         # Create the main window
@@ -687,9 +706,12 @@ class MainWindow:
         menu_bar.add_cascade(label="Training", menu=training_menu)
 
         # Create projector menu
-        projector_menu = Tkinter.Menu(menu_bar, tearoff=False)
-        projector_menu.add_command(label="Start Arena", command=self.open_projector_arena)
-        menu_bar.add_cascade(label="Projector", menu=projector_menu)
+        self._projector_menu = Tkinter.Menu(menu_bar, tearoff=False)
+        self._projector_menu.add_command(label="Start Arena", 
+            command=self.open_projector_arena)
+        self._projector_menu.add_command(label="Calibrate", state=Tkinter.DISABLED, 
+            command=self.calibrate_projector)
+        menu_bar.add_cascade(label="Projector", menu=self._projector_menu)
 
     def callback_factory(self, func, name):
         return lambda: func(name)
@@ -740,7 +762,8 @@ class MainWindow:
         self._previous_shot_time_selection = None
         self._logger = config.get_logger()
         self._virtual_magazine_rounds = -1
-        self._projector_calibrate = False
+        self._projector_calibrator = ProjectorCalibrator()
+        self._calibrate_projector = False
         self._projector_calibrated = False
 
         self._cv = cv2.VideoCapture(0)

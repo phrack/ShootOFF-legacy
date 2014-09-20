@@ -21,16 +21,23 @@ class ProjectorArena():
             x = self._window.winfo_screenwidth()
             y = self._window.winfo_screenheight()
 
-            self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, fill="green", tags=("top_left_calibrator"))
-            self._arena_canvas.create_rectangle(x-250, y-125, x, y, fill="red", tags=("bottom_right_calibrator"))
+            self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, 
+                fill="green", tags=("top_left_calibrator"))
+            self._arena_canvas.create_rectangle(x-250, y-125, x, y, 
+                fill="red", tags=("bottom_right_calibrator"))
         else:
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
+
+    def quit(self):
+        self._shootoff.projector_arena_closed()
+        self._window.destroy()
 
     def build_gui(self, parent):
         self._window = Tkinter.Toplevel(parent)
         self._window.title("Projector Arena")
         self._window.configure(background="black")
+        self._window.protocol("WM_DELETE_WINDOW", self.quit)
 
         self._window.configure(highlightcolor="black")
 
@@ -45,7 +52,8 @@ class ProjectorArena():
 
         self._frame.pack()
 
-    def __init__(self, parent):
+    def __init__(self, parent, shootoff):
         self._fullscreen = False
+        self._shootoff = shootoff        
 
         self.build_gui(parent)
