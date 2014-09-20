@@ -5,6 +5,15 @@
 import Tkinter, ttk
 
 class ProjectorArena():
+    def handle_shot(self, laser_color, x, y):
+        self._arena_canvas.create_oval(
+            x - 2,
+            y - 2,
+            x + 2,
+            y + 2, 
+            fill=laser_color, outline=laser_color, 
+            tags=("shot_marker"))        
+
     def toggle_fullscreen(self, event=None):
         self._fullscreen = not self._fullscreen
         self._window.attributes("-fullscreen", self._fullscreen)
