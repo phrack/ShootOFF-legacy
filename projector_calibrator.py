@@ -11,7 +11,7 @@ class ProjectorCalibrator():
 
     def calibrate_projector(self, webcam_image):
         bw = cv2.cvtColor(webcam_image, cv2.cv.CV_BGR2GRAY)
-        (thresh, bw_image) = cv2.threshold(bw, 100, 255, cv2.THRESH_BINARY)
+        (thresh, bw_image) = cv2.threshold(bw, 200, 255, cv2.THRESH_BINARY)
         contours,h = cv2.findContours(bw_image, cv2.cv.CV_RETR_EXTERNAL,
                         cv2.cv.CV_CHAIN_APPROX_SIMPLE)
 

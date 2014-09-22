@@ -582,7 +582,6 @@ class MainWindow:
 
     def open_projector_arena(self):
         self._projector_arena = ProjectorArena(self._window, self)
-        self.calibrate_projector()
 
         self.toggle_projector_menus(True)
 
@@ -595,10 +594,15 @@ class MainWindow:
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
                 label="Stop Calibrating")
 
-            self._projector_calibrated = True
+            self.pause_shot_detection(True)
+            self._projector_calibrated = False
+
         else:
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX,
                 label="Calibrate")
+
+            self.pause_shot_detection(False)
+            self._projector_calibrated = True
 
     def toggle_projector_menus(self, state=True):
         if state:

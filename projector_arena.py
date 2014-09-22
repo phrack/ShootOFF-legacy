@@ -27,13 +27,15 @@ class ProjectorArena():
 
     def calibrate(self, calibration=True):
         if calibration:
-            x = self._window.winfo_screenwidth()
-            y = self._window.winfo_screenheight()
+            x = self._window.winfo_width()
+            y = self._window.winfo_height()
+
+            print x, y
 
             self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, 
-                fill="green", tags=("top_left_calibrator"))
+                fill="white", tags=("top_left_calibrator"))
             self._arena_canvas.create_rectangle(x-250, y-125, x, y, 
-                fill="red", tags=("bottom_right_calibrator"))
+                fill="white", tags=("bottom_right_calibrator"))
         else:
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
