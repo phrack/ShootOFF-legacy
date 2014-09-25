@@ -201,9 +201,13 @@ class TargetEditor():
                 self._selected_region)
 
             if self._selected_region != CANVAS_BACKGROUND:
-                self._fill_color_combo.configure(state="readonly") 
-                self._fill_color_combo.set(
-                    event.widget.itemcget(self._selected_region, "fill"))
+                tags = self._target_canvas.gettags(self._selected_region)         
+                if not "_shape:image" in tags:
+                    self._fill_color_combo.configure(state="readonly") 
+                    self._fill_color_combo.set(
+                        event.widget.itemcget(self._selected_region, "fill"))
+                else:
+                    self._fill_color_combo.configure(state=Tkinter.DISABLED)  
 
                 self._tags_button.configure(state=Tkinter.NORMAL)
 

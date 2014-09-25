@@ -22,8 +22,10 @@ class CanvasManager():
         if (old_selection and
             not self.is_background(old_selection)):
 
-            self._canvas.itemconfig(old_selection, stipple="gray25",
-                outline="black")  
+            tags = self._canvas.gettags(old_selection)         
+            if not "_shape:image" in tags:
+                self._canvas.itemconfig(old_selection, stipple="gray25",
+                    outline="black")  
 
             # On windows we need to do a little trick by converting any selected
             # ovals into a regular polygon with many sides, otherwise they won't
@@ -42,9 +44,11 @@ class CanvasManager():
         # darken the new one and make its outline gold
         if (new_selection and
             not self.is_background(new_selection)):
-            
-            self._canvas.itemconfig(new_selection, stipple="gray50",
-                outline="gold")   
+           
+            tags = self._canvas.gettags(new_selection)         
+            if not "_shape:image" in tags:
+                self._canvas.itemconfig(new_selection, stipple="gray50",
+                    outline="gold")   
 
             if (platform.system() == "Windows" and 
                 not isinstance(new_selection, tuple)):  
