@@ -23,7 +23,8 @@ CANVAS_BACKGROUND = (1,)
 
 class TargetEditor():
     def save_target(self):
-        if self.is_animated(self._regions):
+        is_animated = self.is_animated(self._regions)
+        if is_animated:
             initdir = "animated_targets/"
         else:
             initdir = "targets/"
@@ -43,7 +44,7 @@ class TargetEditor():
                 self._target_canvas)
 
         if (is_new_target):
-            self._notify_new_target(target_file)
+            self._notify_new_target(target_file, is_animated)
 
     def is_animated(self, regions):
         for region in regions:

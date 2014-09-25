@@ -22,7 +22,6 @@ import re
 from shot import Shot
 from tag_parser import TagParser
 from target_editor import TargetEditor
-from target_pickler import TargetPickler
 import time
 from training_protocols.protocol_operations import ProtocolOperations
 from threading import Thread
@@ -34,6 +33,7 @@ TARGET_VISIBILTY_MENU_INDEX = 3
 
 PROJECTOR_ARENA_MENU_INDEX = 0
 PROJECTOR_CALIBRATE_MENU_INDEX = 1
+PROJECTOR_ADD_TARGET_MENU_INDEX = 2
 
 DEFAULT_SHOT_LIST_COLUMNS = ("Time", "Laser")
 
@@ -303,27 +303,25 @@ class MainWindow:
                      notifynewfunc=self.new_target_listener)
 
     def add_target(self, name):
-        # The target count is just supposed to prevent target naming collisions,
-        # not keep track of how many active targets there are
-        target_name = "_internal_name:target" + str(self._target_count)
-        self._target_count += 1
-
-        target_pickler = TargetPickler()
-        (region_object, regions) = target_pickler.load(
-            name, self._webcam_canvas, self._canvas_manager, self._image_regions_images,
-                target_name)
-
+        target_name = self._canvas_manager.add_target(name, self._image_regions_images)
         self._targets.append(target_name)
 
     def edit_target(self, name):
         TargetEditor(self._frame, self._editor_image, name,
                      self.new_target_listener)
 
-    def new_target_listener(self, target_file):
+    def new_target_listener(self, target_file, is_animated):
         (root, ext) = os.path.splitext(os.path.basename(target_file))
-        self._add_target_menu.add_command(label=root,
-                command=self.callback_factory(self.add_target,
-                target_file))
+
+        if not is_animated:
+            self._add_target_menu.add_command(label=root,
+                    command=self.callback_factory(self.add_target,
+                    target_file))
+        else:
+            self._add_projector_target_menu.add_command(label=root,
+                    command=self.callback_factory(self._projector_arena.add_target,
+                    target_file))
+
         self._edit_target_menu.add_command(label=root,
                 command=self.callback_factory(self.edit_target,
                 target_file))
@@ -585,8 +583,7 @@ class MainWindow:
         self._shot_timer_tree.column(name, width=width, stretch=False)
 
     def open_projector_arena(self):
-        self._projector_arena = ProjectorArena(self._window, self)
-
+        self._projector_arena.toggle_visibility()
         self.toggle_projector_menus(True)
 
     def calibrate_projector(self):
@@ -614,10 +611,14 @@ class MainWindow:
                 state=Tkinter.DISABLED)
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
                 state=Tkinter.NORMAL)
+            self._projector_menu.entryconfig(PROJECTOR_ADD_TARGET_MENU_INDEX, 
+                state=Tkinter.NORMAL)
         else:
             self._projector_menu.entryconfig(PROJECTOR_ARENA_MENU_INDEX, 
                 state=Tkinter.NORMAL)
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
+                state=Tkinter.DISABLED)
+            self._projector_menu.entryconfig(PROJECTOR_ADD_TARGET_MENU_INDEX, 
                 state=Tkinter.DISABLED)
 
     def projector_arena_closed(self):
@@ -630,6 +631,8 @@ class MainWindow:
     def build_gui(self, feed_dimensions=(640, 480)):
         # Create the main window
         self._window = Tkinter.Tk()
+
+        self._projector_arena = ProjectorArena(self._window, self)
 
         try:
             if platform.system() == "Windows":            
@@ -705,7 +708,7 @@ class MainWindow:
         self._add_target_menu = self.create_target_list_menu(
             self._targets_menu, "Add Target", self.add_target)
         self._edit_target_menu = self.create_target_list_menu(
-            self._targets_menu, "Edit Target", self.edit_target)
+            self._targets_menu, "Edit Target", self.edit_target, True)
         self._targets_menu.add_command(label="Hide Targets",
             command=self.toggle_target_visibility)
         menu_bar.add_cascade(label="Targets", menu=self._targets_menu)
@@ -728,13 +731,20 @@ class MainWindow:
             command=self.open_projector_arena)
         self._projector_menu.add_command(label="Calibrate", state=Tkinter.DISABLED, 
             command=self.calibrate_projector)
+        self._add_projector_target_menu = self.create_target_list_menu(
+            self._projector_menu, "Add Target", self._projector_arena.add_target, True)
+        self._projector_menu.entryconfig(PROJECTOR_ADD_TARGET_MENU_INDEX, 
+            state=Tkinter.DISABLED)
         menu_bar.add_cascade(label="Projector", menu=self._projector_menu)
 
     def callback_factory(self, func, name):
         return lambda: func(name)
 
-    def create_target_list_menu(self, menu, name, func):
+    def create_target_list_menu(self, menu, name, func, include_animated=False):
         targets = glob.glob("targets/*.target")
+        
+        if include_animated:
+            targets.extend(glob.glob("animated_targets/*.target"))
 
         target_list_menu = Tkinter.Menu(menu, tearoff=False)
 
@@ -766,7 +776,6 @@ class MainWindow:
         self._shots = []
         self._targets = []
         self._image_regions_images = {}
-        self._target_count = 0
         self._refresh_miss_count = 0
         self._show_targets = True
         self._selected_target = ""

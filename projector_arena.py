@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from canvas_manager import CanvasManager
 import Tkinter, ttk
 
 class ProjectorArena():
@@ -40,15 +41,26 @@ class ProjectorArena():
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
 
-    def quit(self):
-        self._shootoff.projector_arena_closed()
-        self._window.destroy()
+    def add_target(self, name):
+        target_name = self._canvas_manager.add_target(name, self._image_regions_images)
+        self._targets.append(target_name)
+
+    def toggle_visibility(self):
+        if self._visible:
+            self._shootoff.projector_arena_closed()
+            self._window.withdraw()
+        else:
+            self._window.update()
+            self._window.deiconify()
+
+        self._visible = not self._visible
 
     def build_gui(self, parent):
         self._window = Tkinter.Toplevel(parent)
         self._window.title("Projector Arena")
         self._window.configure(background="black")
-        self._window.protocol("WM_DELETE_WINDOW", self.quit)
+        self._window.protocol("WM_DELETE_WINDOW", self.toggle_visibility)
+        self._window.withdraw()
 
         self._window.configure(highlightcolor="black")
 
@@ -59,12 +71,17 @@ class ProjectorArena():
             width=600, height=480, background="gray15", bd=-1)
         self._arena_canvas.pack()
 
+        self._canvas_manager = CanvasManager(self._arena_canvas)
+
         self._window.bind("<F11>", self.toggle_fullscreen);  
 
         self._frame.pack()
 
     def __init__(self, parent, shootoff):
+        self._visible = False
         self._fullscreen = False
-        self._shootoff = shootoff        
+        self._shootoff = shootoff
+        self._targets = []        
+        self._image_regions_images = {}
 
         self.build_gui(parent)

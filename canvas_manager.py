@@ -5,6 +5,7 @@
 import math
 from PIL import Image, ImageTk
 import platform
+from target_pickler import TargetPickler
 from threading import Thread
 import time
 
@@ -220,6 +221,18 @@ class CanvasManager():
 
         return False
 
+    def add_target(self, name, image_regions_images):
+        # The target count is just supposed to prevent target naming collisions,
+        # not keep track of how many active targets there are
+        target_name = "_internal_name:target" + str(self._target_count)
+        self._target_count += 1
+
+        target_pickler = TargetPickler()
+        (region_object, regions) = target_pickler.load(
+            name, self._canvas, self, image_regions_images, target_name)
+
+        return target_name
+
     def __init__(self, canvas):
         canvas.bind('<Up>', self.move_region)
         canvas.bind('<Down>', self.move_region)
@@ -234,3 +247,4 @@ class CanvasManager():
 
         self._canvas = canvas
         self._selection = None
+        self._target_count = 0
