@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import pickle
+from PIL import Image, ImageTk
 from tag_parser import TagParser
 
 class TargetPickler():
@@ -11,12 +12,16 @@ class TargetPickler():
 
         for region in region_list:
             region_coords = canvas.coords(region)
-            region_fill = canvas.itemcget(region, "fill")
             region_tags = canvas.gettags(region)
 	
-            region_object.append({"tags":region_tags,
-                "coords":region_coords,
-                "fill":region_fill})
+            if "_shape:image" in region_tags:
+                region_object.append({"tags":region_tags,
+                    "coords":region_coords})
+            else:                
+                region_fill = canvas.itemcget(region, "fill")
+                region_object.append({"tags":region_tags,
+                    "coords":region_coords,
+                    "fill":region_fill})
 
         target = open(target_file, 'wb')
         pickle.dump(region_object, target, pickle.HIGHEST_PROTOCOL)
@@ -25,19 +30,21 @@ class TargetPickler():
     # the target_name is set on every region in a target
     # and should be unique for the webcam feed so that
     # multiple instances of a target can exist
-    def load(self, target_file, canvas,
-		internal_target_name="_internal_name:target"):
+    def load(self, target_file, canvas, canvas_manager,
+		image_regions_images, internal_target_name="_internal_name:target"):
 
         target = open(target_file, 'rb')
         region_object = pickle.load(target)
         target.close()
 
-        regions = self._draw_target(region_object, canvas,
-			internal_target_name)
+        regions = self._draw_target(region_object, canvas, canvas_manager,
+			image_regions_images, internal_target_name)
                 
         return (region_object, regions)
 
-    def _draw_target(self, region_object, canvas, internal_target_name):
+    def _draw_target(self, region_object, canvas, canvas_manager, 
+        image_regions_images, internal_target_name):
+
         regions = []
 
         for region in region_object:
@@ -50,6 +57,18 @@ class TargetPickler():
 
             raw_tags += (internal_target_name,)
             parsed_tags = TagParser.parse_tags(raw_tags)	
+
+            if parsed_tags["_shape"] == "image":
+                shape = canvas.create_image(region["coords"], image=None, 
+                            tags=raw_tags)
+
+                image_regions_images[shape] = ImageTk.PhotoImage(
+                    Image.open(parsed_tags["_path"]))
+
+                canvas.itemconfig(shape, image=image_regions_images[shape])
+
+                canvas_manager.animate(shape, parsed_tags["_path"], 
+                    image_regions_images[shape])
 
             if parsed_tags["_shape"] == "rectangle":
                 shape = canvas.create_rectangle(region["coords"],

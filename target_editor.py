@@ -10,22 +10,28 @@ from target_pickler import TargetPickler
 import Tkinter, tkFileDialog, tkMessageBox, ttk
 
 CURSOR = 0
-RECTANGLE = 1
-OVAL = 2
-TRIANGLE = 3
-FREEFORM_POLYGON = 4
-D_SILHOUETTE_3 = 5
-D_SILHOUETTE_4 = 6
-D_SILHOUETTE_5 = 7
+IMAGE = 1
+RECTANGLE = 2
+OVAL = 3
+TRIANGLE = 4
+FREEFORM_POLYGON = 5
+D_SILHOUETTE_3 = 6
+D_SILHOUETTE_4 = 7
+D_SILHOUETTE_5 = 8
 
 CANVAS_BACKGROUND = (1,)
 
 class TargetEditor():
     def save_target(self):
+        if self.is_animated(self._regions):
+            initdir = "animated_targets/"
+        else:
+            initdir = "targets/"
+
         target_file = tkFileDialog.asksaveasfilename(
             defaultextension=".target",
             filetypes=[("ShootOFF Target", ".target")],
-            initialdir="targets/",
+            initialdir=initdir,
             title="Save ShootOFF Target",
             parent=self._window)
 
@@ -38,6 +44,14 @@ class TargetEditor():
 
         if (is_new_target):
             self._notify_new_target(target_file)
+
+    def is_animated(self, regions):
+        for region in regions:
+            for tag in self._target_canvas.gettags(region):
+                if "animate" in tag:       
+                    return True
+
+        return False
 
     def color_selected(self, event):
         self._target_canvas.focus_set()
@@ -112,6 +126,16 @@ class TargetEditor():
         if self._radio_selection.get() != FREEFORM_POLYGON:
             self._reset_freeform_polygon()
 
+        if self._radio_selection.get() == IMAGE:
+            image_file = tkFileDialog.askopenfilename(defaultextension=".*",
+                filetypes=[("Graphics Interchange Format", ".gif"), 
+                    ("Portable Network Graphic", ".png")],
+                initialdir="animated_targets/",
+                title="Open Target Image",
+                parent=self._window)
+
+            self._image_path = os.path.relpath(image_file)
+
     def canvas_right_click(self, event):
         if self._radio_selection.get() == FREEFORM_POLYGON:
             if len(self._freeform_vertices_points) < 4:
@@ -146,6 +170,20 @@ class TargetEditor():
 
             self._create_cursor_shape(event)
 
+        elif self._radio_selection.get() == IMAGE:
+            # Make image a part of the target
+            self._image_regions_images[self._cursor_shape] = ImageTk.PhotoImage(
+                Image.open(self._image_path))
+
+            self._target_canvas.itemconfig(self._cursor_shape, 
+                image=self._image_regions_images[self._cursor_shape])
+
+            self._canvas_manager.animate(self._cursor_shape, self._image_path, 
+                self._image_regions_images[self._cursor_shape])
+
+            self._regions.append(self._cursor_shape)   
+            self._create_cursor_shape(event) 
+
         elif self._radio_selection.get() != CURSOR:
             # This will make it so that mouse move event
             # won't delete the current cursor shape and will
@@ -153,6 +191,7 @@ class TargetEditor():
             # as a region
             self._regions.append(self._cursor_shape)
             self._create_cursor_shape(event)
+
         else:
             old_region = self._selected_region
             self._selected_region = event.widget.find_closest(
@@ -194,7 +233,15 @@ class TargetEditor():
         initial_size = 30
         aqt_scale = 2.5
 
-        if self._radio_selection.get() == RECTANGLE:        
+        if self._radio_selection.get() == IMAGE:
+            image = Image.open(self._image_path)
+            self._cursor_photoimage = ImageTk.PhotoImage(image)
+
+            self._cursor_shape = self._target_canvas.create_image(
+                event.x, event.y, image=self._cursor_photoimage,
+                tags=("_shape:image", "_path:" + self._image_path))
+
+        elif self._radio_selection.get() == RECTANGLE:        
             self._cursor_shape = self._target_canvas.create_rectangle(
                 event.x - initial_size,
                 event.y - initial_size,
@@ -419,6 +466,10 @@ class TargetEditor():
         self._cursor_icon = Image.open("images/cursor.png")
         self.create_radio_button(toolbar, self._cursor_icon, "Select Region", CURSOR)
 
+        # image button
+        self._image_icon = Image.open("images/gnome_image_x_generic.png")
+        self.create_radio_button(toolbar, self._image_icon, "Draw Image", IMAGE)
+
         # rectangle button
         self._rectangle_icon = Image.open("images/rectangle.png")
         self.create_radio_button(toolbar, self._rectangle_icon, "Draw Rectangle", RECTANGLE)
@@ -533,12 +584,14 @@ class TargetEditor():
         self._freeform_vertices_ids = []
         self._freeform_edges_ids = []
         self._freeform_temp_line_id = None
+        self._image_regions_images = {}
         self.build_gui(parent, webcam_image)
 
         if target is not None:
             target_pickler = TargetPickler()
             (region_object, self._regions) = target_pickler.load(
-                target, self._target_canvas)
+                target, self._target_canvas, self._canvas_manager, 
+                self._image_regions_images)
 
         self._notify_new_target = notifynewfunc
 

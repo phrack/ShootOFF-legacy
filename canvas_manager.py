@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 import math
+from PIL import Image, ImageTk
 import platform
+from threading import Thread
+import time
 
 # This class manages operations common to the webcam feed canvas
 # and the target editor canvas
@@ -156,6 +159,56 @@ class CanvasManager():
             event.widget.scale(self._selection, c[0], c[1], (width+1)/width, 1)
         elif event.keysym == "Left" and width > 1:
             event.widget.scale(self._selection, c[0], c[1], (width-1)/width, 1)
+
+    # finish_frame is ImageTk.PhotoImage or None (if none, assume last frame)
+    def animate(self, region, image_path, finish_frame=None):
+        Thread(target=self._animate, args=(region, image_path, finish_frame)).start()
+
+    def _animate(self, region, image_path, finish_frame):
+        image = Image.open(image_path)
+        frames = []
+
+        try:
+            while True:
+                frames.append(image.copy())
+                image.seek(len(frames))
+        except EOFError:
+            pass
+
+        if len(frames) == 1: 
+            return
+
+        if "duration" in image.info:
+            if image.info["duration"] != 0:
+                animation_delay = image.info["duration"] / 1000
+            else: 
+                animation_delay = .1
+        else:
+            animation_delay = .1
+
+        first = frames[0].convert('RGBA')
+        frame_images = [ImageTk.PhotoImage(first)]
+
+        temp = frames[0]
+        for image in frames[1:]:
+            temp.paste(image)
+            frame = temp.convert('RGBA')
+            frame_images.append(ImageTk.PhotoImage(frame))
+
+        self._play_animation(region, frame_images, animation_delay, 0, finish_frame)
+
+    def _play_animation(self, region, frames, delay, index, finish_frame):
+        if index == len(frames):
+            if finish_frame != None:
+                time.sleep(delay)
+                self._canvas.itemconfig(region, image=finish_frame)
+
+            return 
+
+        self._canvas.itemconfig(region, image=frames[index])
+
+        time.sleep(delay)
+        self._play_animation(region, frames, delay, index+1, finish_frame) 
 
     def is_background(self, selection):
         if "background" in self._canvas.gettags(selection):

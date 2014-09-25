@@ -310,7 +310,8 @@ class MainWindow:
 
         target_pickler = TargetPickler()
         (region_object, regions) = target_pickler.load(
-            name, self._webcam_canvas, target_name)
+            name, self._webcam_canvas, self._canvas_manager, self._image_regions_images,
+                target_name)
 
         self._targets.append(target_name)
 
@@ -764,6 +765,7 @@ class MainWindow:
     def __init__(self, config):
         self._shots = []
         self._targets = []
+        self._image_regions_images = {}
         self._target_count = 0
         self._refresh_miss_count = 0
         self._show_targets = True
