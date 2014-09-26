@@ -31,8 +31,6 @@ class ProjectorArena():
             x = self._window.winfo_width()
             y = self._window.winfo_height()
 
-            print x, y
-
             self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, 
                 fill="white", tags=("top_left_calibrator"))
             self._arena_canvas.create_rectangle(x-250, y-125, x, y, 
@@ -40,6 +38,12 @@ class ProjectorArena():
         else:
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
+        
+    def arena_width(self):
+        return self._arena_canvas.winfo_width()
+
+    def arena_height(self):
+        return self._arena_canvas.winfo_height()
 
     def add_target(self, name):
         target_name = self._canvas_manager.add_target(name, self._image_regions_images)

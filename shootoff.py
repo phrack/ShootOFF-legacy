@@ -167,10 +167,12 @@ class MainWindow:
         # projector's bounding box, tell the projector arena
         if self._projector_calibrated:
             bbox = self._projector_calibrator.get_projected_bbox()
+            x_scale = float(self._projector_arena.arena_width()) / float(bbox[2] - bbox[0])
+            y_scale = float(self._projector_arena.arena_height()) / float(bbox[3] - bbox[1])
             if (x > bbox[0] and x < bbox[2] and y > bbox[1] and y < bbox[3]):
                 # Translate the coordinates into the arena's coordinate system
                 self._projector_arena.handle_shot(laser_color, 
-                    x - bbox[0], y - bbox[1])
+                    (x - bbox[0])*x_scale, (y - bbox[1])*y_scale)
       
         # Start the shot timer if it has not been started yet,
         # otherwise get the time offset
