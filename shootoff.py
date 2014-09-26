@@ -785,7 +785,7 @@ class MainWindow:
         self._calibrate_projector = False
         self._projector_calibrated = False
 
-        self._cv = cv2.VideoCapture(1)
+        self._cv = cv2.VideoCapture(0)
 
         if self._cv.isOpened():
             width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
