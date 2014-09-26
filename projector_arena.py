@@ -28,6 +28,10 @@ class ProjectorArena():
 
     def calibrate(self, calibration=True):
         if calibration:
+            # This is to cover existing targets
+            self._arena_canvas.create_rectangle(0, 0, self._arena_canvas.winfo_width(), 
+                self._arena_canvas.winfo_height(), fill="black", tags=("target_cover"))
+
             x = self._window.winfo_width()
             y = self._window.winfo_height()
 
@@ -36,6 +40,7 @@ class ProjectorArena():
             self._arena_canvas.create_rectangle(x-250, y-125, x, y, 
                 fill="white", tags=("bottom_right_calibrator"))
         else:
+            self._arena_canvas.delete("target_cover")
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
         
