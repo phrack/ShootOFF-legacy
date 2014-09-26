@@ -106,6 +106,9 @@ class TargetPickler():
                     fill=region["fill"], outline="black",
                     stipple="gray25", tags=raw_tags)
 
+            if "visible" in parsed_tags and parsed_tags["visible"].lower() == "false":
+                canvas.tag_lower(shape, "background")
+
             if shape != 0:
                 regions.append(shape)
 

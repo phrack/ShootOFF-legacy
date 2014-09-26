@@ -18,7 +18,6 @@ from preferences_editor import PreferencesEditor
 from projector_arena import ProjectorArena
 from projector_calibrator import ProjectorCalibrator
 import random
-import re
 from shot import Shot
 from tag_parser import TagParser
 from target_editor import TargetEditor
@@ -282,11 +281,10 @@ class MainWindow:
         # If we hit a targert region, run its commands and notify the
         # loaded plugin of the hit
         for region in reversed(regions):
-            tags = TagParser.parse_tags(
-                self._webcam_canvas.gettags(region))
+            tags = TagParser.parse_tags(self._webcam_canvas.gettags(region))
 
             if "_internal_name" in tags and "command" in tags:
-                self.execute_region_commands(tags["command"])
+                self._canvas_manager.execute_region_commands(region, tags["command"], self._protocol_operations)
 
             if "_internal_name" in tags and self._loaded_training != None:
                 self._loaded_training.hit_listener(region, tags, shot, shot_list_item)
@@ -296,6 +294,13 @@ class MainWindow:
                 # only run the commands and notify a hit for the top most
                 # region
                 break
+
+        # Also run commands for all hidden regions that were hit
+        for region in regions:
+            tags = TagParser.parse_tags(self._webcam_canvas.gettags(region))
+
+            if "visible" in tags and "command" in tags and tags["visible"].lower() == "false":                
+                self._canvas_manager.execute_region_commands(region, tags["command"], self._protocol_operations)
 
         if self._loaded_training != None:
             self._loaded_training.shot_listener(shot, shot_list_item, is_hit)   
@@ -327,27 +332,6 @@ class MainWindow:
         self._edit_target_menu.add_command(label=root,
                 command=self.callback_factory(self.edit_target,
                 target_file))
-
-    def execute_region_commands(self, command_list):
-        args = []
-
-        for command in command_list:
-            # Parse the command name and arguments arguments are expected to
-            # be comma separated and in between paren:
-            # command_name(arg0,arg1,...,argN)
-            pattern = r'(\w[\w\d_]*)\((.*)\)$'
-            match = re.match(pattern, command)
-            if match:
-                command = match.groups()[0]
-                if len(match.groups()) > 0:
-                    args = match.groups()[1].split(",")
-
-            # Run the commands
-            if command == "reset":
-                self.reset_click()
-
-            if command == "play_sound":
-                self._protocol_operations.play_sound(args[0])
 
     def toggle_target_visibility(self):
         if self._show_targets:

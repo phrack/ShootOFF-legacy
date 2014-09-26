@@ -125,6 +125,10 @@ class ProtocolOperations():
     def clear_shots(self):
         self._shootoff.clear_shots()
 
+    # This performs the same operation as hitting the reset button
+    def reset(self):
+        self._shootoff.reset_click()
+
     # Use text-to-speech to say message outloud
     def say(self, message):
         # if we don't do this on another thread we have to wait until

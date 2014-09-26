@@ -176,11 +176,8 @@ class TargetEditor():
             self._target_canvas.itemconfig(self._cursor_shape, 
                 image=self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
 
-            b = self._image_regions_images[self._cursor_shape][canvas_manager.IMAGE_INDEX].getbbox()
-            width = b[2] - b[0]
-            height = b[3] - b[1] 
             self._canvas_manager.animate(self._cursor_shape, self._image_path, 
-                self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX], width, height)
+                self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
 
             self._regions.append(self._cursor_shape)   
             self._create_cursor_shape(event) 

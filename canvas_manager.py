@@ -5,6 +5,8 @@
 import math
 from PIL import Image, ImageTk
 import platform
+import re
+from tag_parser import TagParser
 from target_pickler import TargetPickler
 from threading import Thread
 import time
@@ -201,16 +203,6 @@ class CanvasManager():
             self._image_regions_images[region] = (new_image, ImageTk.PhotoImage(new_image))
             self._canvas.itemconfig(region, image=self._image_regions_images[region][PHOTOIMAGE_INDEX])
 
-
-
-    def is_animated(self, regions):
-        for region in regions:
-            for tag in self._canvas.gettags(region):
-                if "animate" in tag:       
-                    return True
-
-        return False
-
     # finish_frame is ImageTk.PhotoImage or None (if none, assume last frame)
     def animate(self, region, image_path, finish_frame=None, width=None, height=None):
         Thread(target=self._animate, args=(region, image_path, finish_frame, width, height)).start()
@@ -234,7 +226,7 @@ class CanvasManager():
 
         if "duration" in image.info:
             if image.info["duration"] != 0:
-                animation_delay = image.info["duration"] / 1000
+                animation_delay = float(image.info["duration"]) / 1000.0
             else: 
                 animation_delay = .1
         else:
@@ -263,6 +255,45 @@ class CanvasManager():
 
         time.sleep(delay)
         self._play_animation(region, frames, delay, index+1, finish_frame) 
+
+    def execute_region_commands(self, region, command_list, operations):
+        args = []
+
+        for command in command_list:
+            # Parse the command name and arguments arguments are expected to
+            # be comma separated and in between paren:
+            # command_name(arg0,arg1,...,argN)
+            pattern = r'(\w[\w\d_]*)\((.*)\)$'
+            match = re.match(pattern, command)
+            if match:
+                command = match.groups()[0]
+                if len(match.groups()) > 0:
+                    args = match.groups()[1].split(",")
+
+            # Run the commands
+            if command == "reset":
+                operations.reset()
+
+            if command == "play_sound":
+                operations.play_sound(args[0])
+
+            if command == "animate":
+                if len(args) != 0:
+                    # Animate the named region
+                    region = self._canvas.find_withtag("name:" + args[0])[0]           
+                
+                tags = TagParser.parse_tags(self._canvas.gettags(region))
+                if "_path" in tags:
+                    b = self._image_regions_images[region][IMAGE_INDEX].getbbox()
+                    self.animate(region, tags["_path"], None, b[2] - b[0], b[3] - b[1])
+
+    def is_animated(self, regions):
+        for region in regions:
+            for tag in self._canvas.gettags(region):
+                if "animate" in tag:       
+                    return True
+
+        return False
 
     def is_background(self, selection):
         if "background" in self._canvas.gettags(selection):
