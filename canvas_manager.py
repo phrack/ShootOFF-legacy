@@ -205,7 +205,7 @@ class CanvasManager():
 
     def is_animated(self, regions):
         for region in regions:
-            for tag in self._target_canvas.gettags(region):
+            for tag in self._canvas.gettags(region):
                 if "animate" in tag:       
                     return True
 
