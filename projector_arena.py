@@ -3,28 +3,59 @@
 # found in the LICENSE file.
 
 from canvas_manager import CanvasManager
+from tag_parser import TagParser
 import Tkinter, ttk
 
 class ProjectorArena():
     def handle_shot(self, laser_color, x, y):
-        self._arena_canvas.create_oval(
-            x - 2,
-            y - 2,
-            x + 2,
-            y + 2, 
-            fill=laser_color, outline=laser_color, 
-            tags=("shot_marker"))        
+        regions = self._arena_canvas.find_overlapping(x, y, x, y)
 
+        # If we hit a targert region, run its commands and notify the
+        # loaded plugin of the hit
+        for region in reversed(regions):
+            tags = TagParser.parse_tags(self._arena_canvas.gettags(region))
+
+            if "_internal_name" in tags and "command" in tags:
+                self._canvas_manager.execute_region_commands(region, tags["command"], 
+                    self._shootoff.get_protocol_operations())
+
+            #if "_internal_name" in tags and self._loaded_training != None:
+            #    self._loaded_training.hit_listener(region, tags, shot, shot_list_item)
+
+            if "_internal_name" in tags:
+                is_hit = True
+                # only run the commands and notify a hit for the top most
+                # region
+                break
+
+        # Also run commands for all hidden regions that were hit
+        for region in regions:
+            tags = TagParser.parse_tags(self._arena_canvas.gettags(region))
+
+            if "visible" in tags and "command" in tags and tags["visible"].lower() == "false":                
+                self._canvas_manager.execute_region_commands(region, tags["command"], 
+                    self._shootoff.get_protocol_operations())
+
+        #if self._loaded_training != None:
+        #    self._loaded_training.shot_listener(shot, shot_list_item, is_hit)   
+     
+    def reset(self):
+        self._canvas_manager.reset_animations()
+    
     def toggle_fullscreen(self, event=None):
         self._fullscreen = not self._fullscreen
         self._window.attributes("-fullscreen", self._fullscreen)
 
         if self._fullscreen:
-            self._arena_canvas.configure(width=self._window.winfo_screenwidth())
-            self._arena_canvas.configure(height=self._window.winfo_screenheight())
+            self._arena_canvas.configure(width=self._window.winfo_screenwidth(), height=self._window.winfo_screenheight())
+            width_scale = float(self._window.winfo_screenwidth())  / float(self._window.winfo_width())
+            height_scale = float(self._window.winfo_screenheight())  / float(self._window.winfo_height())
+            self._arena_canvas.scale("background", 0, 0, width_scale, height_scale)
         else:
-            self._arena_canvas.configure(width=self._window.winfo_width())
-            self._arena_canvas.configure(height=self._window.winfo_height())
+            self._arena_canvas.configure(width=self._window.winfo_width(), height=self._window.winfo_height())
+            width_scale = float(self._window.winfo_width())  / float(self._window.winfo_screenwidth())
+            height_scale = float(self._window.winfo_height())  / float(self._window.winfo_screenheight())
+            self._arena_canvas.scale("background", 0, 0, width_scale, height_scale)
 
     def calibrate(self, calibration=True):
         if calibration:
@@ -53,6 +84,9 @@ class ProjectorArena():
     def add_target(self, name):
         target_name = self._canvas_manager.add_target(name, self._image_regions_images)
         self._targets.append(target_name)
+
+        if len(self._arena_canvas.find_withtag("target_cover")) > 0:
+            self._arena_canvas.tag_lower(target_name, "target_cover")
 
     def toggle_visibility(self):
         if self._visible:
@@ -110,6 +144,7 @@ class ProjectorArena():
 
         self._arena_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._arena_canvas.bind('<Delete>', self.canvas_delete_target)
+        self._arena_canvas.create_rectangle(0, 0, 600, 480, fill="gray15", outline="gray15", tags=("background"))
 
         self._canvas_manager = CanvasManager(self._arena_canvas, self._image_regions_images)
 

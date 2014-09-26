@@ -51,7 +51,7 @@ class CanvasManager():
         if (new_selection and
             not self.is_background(new_selection)):
            
-            tags = self._canvas.gettags(new_selection)         
+            tags = self._canvas.gettags(new_selection)
             if not "_shape:image" in tags:
                 self._canvas.itemconfig(new_selection, stipple="gray50",
                     outline="gold")   

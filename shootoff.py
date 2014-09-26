@@ -305,6 +305,9 @@ class MainWindow:
         if self._loaded_training != None:
             self._loaded_training.shot_listener(shot, shot_list_item, is_hit)   
 
+    def get_protocol_operations(self):
+        return self._protocol_operations
+
     def open_target_editor(self):
         TargetEditor(self._frame, self._editor_image,
                      notifynewfunc=self.new_target_listener)
@@ -371,6 +374,9 @@ class MainWindow:
 
         if self._preferences[configurator.USE_VIRTUAL_MAGAZINE]:
             self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
+
+        if self._projector_calibrated:
+            self._projector_arena.reset()
 
     def quit(self):
         if self._loaded_training:
@@ -779,7 +785,7 @@ class MainWindow:
         self._calibrate_projector = False
         self._projector_calibrated = False
 
-        self._cv = cv2.VideoCapture(0)
+        self._cv = cv2.VideoCapture(1)
 
         if self._cv.isOpened():
             width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
