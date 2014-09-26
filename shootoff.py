@@ -161,6 +161,8 @@ class MainWindow:
             return
 
         timestamp = 0
+        hit_projector_region = None
+        projector_region_tags = None
 
         # If the projector is calibrated and the shot is in the
         # projector's bounding box, tell the projector arena
@@ -170,7 +172,7 @@ class MainWindow:
             y_scale = float(self._projector_arena.arena_height()) / float(bbox[3] - bbox[1])
             if (x > bbox[0] and x < bbox[2] and y > bbox[1] and y < bbox[3]):
                 # Translate the coordinates into the arena's coordinate system
-                self._projector_arena.handle_shot(laser_color, 
+                hit_projector_region, projector_region_tags = self._projector_arena.handle_shot(laser_color, 
                     (x - bbox[0])*x_scale, (y - bbox[1])*y_scale)
       
         # Start the shot timer if it has not been started yet,
@@ -195,6 +197,11 @@ class MainWindow:
             laser_color, timestamp)
         self._shots.append(new_shot)
         new_shot.draw_marker()
+
+        if hit_projector_region != None  and self._loaded_training != None:
+            self._loaded_training.hit_listener(hit_projector_region, projector_region_tags, 
+                new_shot, tree_item)
+            return
 
         # Process the shot to see if we hit a region and perform
         # a training protocol specific action and any if we did
@@ -430,27 +437,11 @@ class MainWindow:
             self._loaded_training.destroy()
             self._protocol_operations.destroy()
             self._loaded_training = None
-
-    def aggregate_targets(self):
-        # Create a list of targets, their regions, and the tags attached
-        # to those regions so that the plugin can have a stock of what
-        # can be shot
-        targets = []
-
-        for target in self._targets:
-            target_regions = self._webcam_canvas.find_withtag(target)
-            target_data = {"name": target, "regions": []}
-            targets.append(target_data)
-
-            for region in target_regions:
-                tags = TagParser.parse_tags(
-                    self._webcam_canvas.gettags(region))
-                target_data["regions"].append(tags)
-
-        return targets
+            self._projector_arena.set_training_protocol(self._loaded_training)
 
     def load_training(self, plugin):
-        targets = self.aggregate_targets()
+        targets = self._canvas_manager.aggregate_targets(self._targets)
+        targets.extend(self._projector_arena.aggregate_targets())
 
         if self._loaded_training:
             self._loaded_training.destroy()
@@ -461,6 +452,8 @@ class MainWindow:
         self._protocol_operations = ProtocolOperations(self._webcam_canvas, self)
         self._loaded_training = imp.load_module("__init__", *plugin).load(
             self._window, self._protocol_operations, targets)
+
+        self._projector_arena.set_training_protocol(self._loaded_training)
 
     def edit_preferences(self):
         preferences_editor = PreferencesEditor(self._window, self._config_parser,

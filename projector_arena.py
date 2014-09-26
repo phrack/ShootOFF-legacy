@@ -8,6 +8,8 @@ import Tkinter, ttk
 
 class ProjectorArena():
     def handle_shot(self, laser_color, x, y):
+        hit_region = None
+        hit_tags = None
         regions = self._arena_canvas.find_overlapping(x, y, x, y)
 
         # If we hit a targert region, run its commands and notify the
@@ -19,8 +21,9 @@ class ProjectorArena():
                 self._canvas_manager.execute_region_commands(region, tags["command"], 
                     self._shootoff.get_protocol_operations())
 
-            #if "_internal_name" in tags and self._loaded_training != None:
-            #    self._loaded_training.hit_listener(region, tags, shot, shot_list_item)
+            if "_internal_name" in tags and self._loaded_training != None:
+                hit_region = region
+                hit_tags = TagParser.parse_tags(self._arena_canvas.gettags(region))
 
             if "_internal_name" in tags:
                 is_hit = True
@@ -35,10 +38,9 @@ class ProjectorArena():
             if "visible" in tags and "command" in tags and tags["visible"].lower() == "false":                
                 self._canvas_manager.execute_region_commands(region, tags["command"], 
                     self._shootoff.get_protocol_operations())
-
-        #if self._loaded_training != None:
-        #    self._loaded_training.shot_listener(shot, shot_list_item, is_hit)   
      
+        return hit_region, hit_tags
+
     def reset(self):
         self._canvas_manager.reset_animations()
     
@@ -74,7 +76,13 @@ class ProjectorArena():
             self._arena_canvas.delete("target_cover")
             self._arena_canvas.delete("top_left_calibrator") 
             self._arena_canvas.delete("bottom_right_calibrator") 
-        
+    
+    def aggregate_targets(self):
+        return self._canvas_manager.aggregate_targets(self._targets)
+    
+    def set_training_protocol(self, training):
+        self._loaded_training = training
+
     def arena_width(self):
         return self._arena_canvas.winfo_width()
 
@@ -159,5 +167,6 @@ class ProjectorArena():
         self._targets = []
         self._selected_target = ""        
         self._image_regions_images = {}
+        self._loaded_training = None
 
         self.build_gui(parent)

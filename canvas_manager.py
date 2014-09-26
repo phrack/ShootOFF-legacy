@@ -295,6 +295,24 @@ class CanvasManager():
                     b = self._image_regions_images[region][IMAGE_INDEX].getbbox()
                     self.animate(region, tags["_path"], None, b[2] - b[0], b[3] - b[1])
 
+    def aggregate_targets(self, current_targets):
+        # Create a list of targets, their regions, and the tags attached
+        # to those regions so that the plugin can have a stock of what
+        # can be shot
+        targets = []
+
+        for target in current_targets:
+            target_regions = self._canvas.find_withtag(target)
+            target_data = {"name": target, "regions": []}
+            targets.append(target_data)
+
+            for region in target_regions:
+                tags = TagParser.parse_tags(
+                    self._canvas.gettags(region))
+                target_data["regions"].append(tags)
+
+        return targets
+
     def is_animated(self, regions):
         for region in regions:
             for tag in self._canvas.gettags(region):
