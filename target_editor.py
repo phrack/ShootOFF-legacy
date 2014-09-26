@@ -135,6 +135,10 @@ class TargetEditor():
                 title="Open Target Image",
                 parent=self._window)
 
+            if image_file == None or len(image_file) == 0:
+                self._radio_selection.set(CURSOR)
+                return
+
             self._image_path = os.path.relpath(image_file)
 
     def canvas_right_click(self, event):

@@ -55,6 +55,34 @@ class ProjectorArena():
 
         self._visible = not self._visible
 
+    def canvas_click(self, event):
+        # find the target that was selected
+        # if a target wasn't clicked, _selected_target
+        # will be empty and all targets will be dim
+        selected_region = event.widget.find_closest(
+            event.x, event.y)
+        target_name = ""
+
+        for tag in self._arena_canvas.gettags(selected_region):
+            if tag.startswith("_internal_name:"):
+                target_name = tag
+                break
+
+        if self._selected_target == target_name:
+            return
+
+        self._canvas_manager.selection_update_listener(self._selected_target,
+                                                       target_name)
+        self._selected_target = target_name
+
+    def canvas_delete_target(self, event):
+        if (self._selected_target):
+            for target in self._targets:
+                if target == self._selected_target:
+                    self._targets.remove(target)
+            event.widget.delete(self._selected_target)
+            self._selected_target = ""
+
     def build_gui(self, parent):
         self._window = Tkinter.Toplevel(parent)
         self._window.title("Projector Arena")
@@ -71,6 +99,9 @@ class ProjectorArena():
             width=600, height=480, background="gray15", bd=-1)
         self._arena_canvas.pack()
 
+        self._arena_canvas.bind('<ButtonPress-1>', self.canvas_click)
+        self._arena_canvas.bind('<Delete>', self.canvas_delete_target)
+
         self._canvas_manager = CanvasManager(self._arena_canvas)
 
         self._window.bind("<F11>", self.toggle_fullscreen);  
@@ -81,7 +112,8 @@ class ProjectorArena():
         self._visible = False
         self._fullscreen = False
         self._shootoff = shootoff
-        self._targets = []        
+        self._targets = []
+        self._selected_target = ""        
         self._image_regions_images = {}
 
         self.build_gui(parent)
