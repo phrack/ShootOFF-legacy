@@ -137,19 +137,22 @@ class CanvasManager():
 
         c = event.widget.coords(self._selection)
         is_polygon = len(c) > 6
-        is_image = len(c) == 2
-
+        
+        for region in self._canvas.find_withtag(self._selection):
+            is_image = "_shape:image" in self._canvas.gettags(region)
+            if is_image:
+                break
+           
         # If there is an image we have to scale every region one at a time
         # otherwise the images won't get scaled correctly
         if is_image:
             if isinstance(self._selection, tuple):
                 self._scale_region(event, c, is_polygon, is_image, self._selection[0])
-                print "xx"
             else:                
                 for region in self._canvas.find_withtag(self._selection):
                     c = event.widget.coords(region)
                     is_polygon = len(c) > 6
-                    is_image = len(c) == 2
+                    is_image = "_shape:image" in self._canvas.gettags(region)
                     self._scale_region(event, c, is_polygon, is_image, region)
         else:
             self._scale_region(event, c, is_polygon, is_image, self._selection)
