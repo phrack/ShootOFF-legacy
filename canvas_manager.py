@@ -29,7 +29,7 @@ class CanvasManager():
             not self.is_background(old_selection)):
 
             tags = self._canvas.gettags(old_selection)         
-            if not "_shape:image" in tags:
+            if not "_shape:image" in tags and not "visible:false" in tags:
                 self._canvas.itemconfig(old_selection, stipple="gray25",
                     outline="black")  
 
@@ -52,7 +52,7 @@ class CanvasManager():
             not self.is_background(new_selection)):
            
             tags = self._canvas.gettags(new_selection)
-            if not "_shape:image" in tags:
+            if not "_shape:image" in tags and not "visible:false" in tags:
                 self._canvas.itemconfig(new_selection, stipple="gray50",
                     outline="gold")   
 
@@ -144,6 +144,7 @@ class CanvasManager():
         if is_image:
             if isinstance(self._selection, tuple):
                 self._scale_region(event, c, is_polygon, is_image, self._selection[0])
+                print "xx"
             else:                
                 for region in self._canvas.find_withtag(self._selection):
                     c = event.widget.coords(region)
