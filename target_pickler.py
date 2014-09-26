@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import canvas_manager
 import pickle
 from PIL import Image, ImageTk
 from tag_parser import TagParser
@@ -42,7 +43,7 @@ class TargetPickler():
                 
         return (region_object, regions)
 
-    def _draw_target(self, region_object, canvas, canvas_manager, 
+    def _draw_target(self, region_object, canvas, _canvas_manager, 
         image_regions_images, internal_target_name):
 
         regions = []
@@ -62,13 +63,13 @@ class TargetPickler():
                 shape = canvas.create_image(region["coords"], image=None, 
                             tags=raw_tags)
 
-                image_regions_images[shape] = ImageTk.PhotoImage(
-                    Image.open(parsed_tags["_path"]))
+                image = Image.open(parsed_tags["_path"])
+                image_regions_images[shape] = (image, ImageTk.PhotoImage(image))
 
-                canvas.itemconfig(shape, image=image_regions_images[shape])
+                canvas.itemconfig(shape, image=image_regions_images[shape][canvas_manager.PHOTOIMAGE_INDEX])
 
-                canvas_manager.animate(shape, parsed_tags["_path"], 
-                    image_regions_images[shape])
+                _canvas_manager.animate(shape, parsed_tags["_path"], 
+                    image_regions_images[shape][canvas_manager.PHOTOIMAGE_INDEX])
 
             if parsed_tags["_shape"] == "rectangle":
                 shape = canvas.create_rectangle(region["coords"],

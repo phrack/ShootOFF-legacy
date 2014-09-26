@@ -663,7 +663,7 @@ class MainWindow:
             self._webcam_canvas.bind('<Shift-ButtonPress-1>', self.canvas_click_red)
             self._webcam_canvas.bind('<Control-ButtonPress-1>', self.canvas_click_green)
 
-        self._canvas_manager = CanvasManager(self._webcam_canvas)
+        self._canvas_manager = CanvasManager(self._webcam_canvas, self._image_regions_images)
 
         # Create a button to clear shots and reset the current training protocol
         self._reset_button = ttk.Button(

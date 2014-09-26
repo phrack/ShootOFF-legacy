@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import canvas_manager
 from canvas_manager import CanvasManager
 import os
 from PIL import Image, ImageTk
@@ -23,7 +24,7 @@ CANVAS_BACKGROUND = (1,)
 
 class TargetEditor():
     def save_target(self):
-        is_animated = self.is_animated(self._regions)
+        is_animated = self._canvas_manager.is_animated(self._regions)
         if is_animated:
             initdir = "animated_targets/"
         else:
@@ -45,14 +46,6 @@ class TargetEditor():
 
         if (is_new_target):
             self._notify_new_target(target_file, is_animated)
-
-    def is_animated(self, regions):
-        for region in regions:
-            for tag in self._target_canvas.gettags(region):
-                if "animate" in tag:       
-                    return True
-
-        return False
 
     def color_selected(self, event):
         self._target_canvas.focus_set()
@@ -177,14 +170,17 @@ class TargetEditor():
 
         elif self._radio_selection.get() == IMAGE:
             # Make image a part of the target
-            self._image_regions_images[self._cursor_shape] = ImageTk.PhotoImage(
-                Image.open(self._image_path))
+            image = Image.open(self._image_path)
+            self._image_regions_images[self._cursor_shape] = (image, ImageTk.PhotoImage(image))
 
             self._target_canvas.itemconfig(self._cursor_shape, 
-                image=self._image_regions_images[self._cursor_shape])
+                image=self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
 
+            b = self._image_regions_images[self._cursor_shape][canvas_manager.IMAGE_INDEX].getbbox()
+            width = b[2] - b[0]
+            height = b[3] - b[1] 
             self._canvas_manager.animate(self._cursor_shape, self._image_path, 
-                self._image_regions_images[self._cursor_shape])
+                self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX], width, height)
 
             self._regions.append(self._cursor_shape)   
             self._create_cursor_shape(event) 
@@ -451,7 +447,7 @@ class TargetEditor():
         self._target_canvas.bind('<Control-z>', self.undo_vertex)
         self._target_canvas.bind('<ButtonPress-3>', self.canvas_right_click)
 
-        self._canvas_manager = CanvasManager(self._target_canvas)
+        self._canvas_manager = CanvasManager(self._target_canvas, self._image_regions_images)
 
         # Align this window with it's parent otherwise it ends up all kinds of
         # crazy places when multiple monitors are used

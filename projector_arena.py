@@ -111,7 +111,7 @@ class ProjectorArena():
         self._arena_canvas.bind('<ButtonPress-1>', self.canvas_click)
         self._arena_canvas.bind('<Delete>', self.canvas_delete_target)
 
-        self._canvas_manager = CanvasManager(self._arena_canvas)
+        self._canvas_manager = CanvasManager(self._arena_canvas, self._image_regions_images)
 
         self._window.bind("<F11>", self.toggle_fullscreen);  
 
