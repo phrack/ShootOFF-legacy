@@ -208,6 +208,10 @@ class CanvasManager():
         Thread(target=self._animate, args=(region, image_path, finish_frame, width, height)).start()
 
     def _animate(self, region, image_path, finish_frame, width, height):
+        # Don't repeat an animation if the target is on the last frame
+        if str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX]):
+            return
+
         image = Image.open(image_path)
         frames = []
 
