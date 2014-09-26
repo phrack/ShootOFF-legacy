@@ -295,6 +295,12 @@ class CanvasManager():
 
         return False
 
+    def reset_animations(self):
+        image_regions = self._canvas.find_withtag("_shape:image")
+
+        for region in image_regions:
+            self._canvas.itemconfig(region, image=self._image_regions_images[region][PHOTOIMAGE_INDEX])
+
     def is_background(self, selection):
         if "background" in self._canvas.gettags(selection):
             return True
