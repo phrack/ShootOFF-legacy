@@ -40,6 +40,7 @@ dict_tree1 = Tree('training_protocols', prefix = 'training_protocols')
 dict_tree2 = Tree('images', prefix = 'images')
 dict_tree3 = Tree('targets', prefix = 'targets')
 dict_tree4 = Tree('sounds', prefix = 'sounds')
+dict_tree5 = Tree('animated_targets', prefix = 'animated_targets')
 license = Datafiles('LICENSE')
 
 
@@ -51,6 +52,7 @@ coll = COLLECT(exe,
                dict_tree2,
                dict_tree3,
                dict_tree4,
+               dict_tree5,
                license,
                strip=None,
                upx=True,
