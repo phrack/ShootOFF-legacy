@@ -265,6 +265,11 @@ class CanvasManager():
         self._play_animation(region, frames, delay, index+1, finish_frame) 
 
     def execute_region_commands(self, region, command_list, operations):
+        # Don't run commands if the region is an image that is on the last frame
+        if ("_shape:image" in self._canvas.gettags(region) and 
+            str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX])):
+            return
+
         args = []
 
         for command in command_list:

@@ -377,7 +377,7 @@ class MainWindow:
         self.clear_shots()
 
         if self._loaded_training != None:
-            self._loaded_training.reset(self.aggregate_targets())
+            self._loaded_training.reset(self._canvas_manager.aggregate_targets(self._targets))
 
         if self._preferences[configurator.USE_VIRTUAL_MAGAZINE]:
             self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
