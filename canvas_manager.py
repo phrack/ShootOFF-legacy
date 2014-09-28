@@ -182,24 +182,24 @@ class CanvasManager():
             if is_polygon:
                 event.widget.scale(region, c[0], c[1], 1, (height+1)/height)
             elif is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height+5), Image.NEAREST)
+                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height+20), Image.NEAREST)
             else:
                 event.widget.scale(region, c[0], c[1], 1, (height-1)/height)
         elif event.keysym == "Down" and height > 1:
             if is_polygon:
                 event.widget.scale(region, c[0], c[1], 1, (height-1)/height)
             elif is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height-5), Image.NEAREST)
+                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height-20), Image.NEAREST)
             else:
                 event.widget.scale(region, c[0], c[1], 1, (height+1)/height)
         elif event.keysym == "Right":
             if is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width+5, height), Image.NEAREST)
+                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width+20, height), Image.NEAREST)
             else:            
                 event.widget.scale(region, c[0], c[1], (width+1)/width, 1)
         elif event.keysym == "Left" and width > 1:
             if is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width-5, height), Image.NEAREST)
+                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width-20, height), Image.NEAREST)
             else:       
                 event.widget.scale(region, c[0], c[1], (width-1)/width, 1)
 
