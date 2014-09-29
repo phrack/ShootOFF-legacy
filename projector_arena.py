@@ -47,16 +47,19 @@ class ProjectorArena():
     def toggle_fullscreen(self, event=None):
         self._fullscreen = not self._fullscreen
         self._window.attributes("-fullscreen", self._fullscreen)
+        self._window.attributes("-topmost", self._fullscreen)
 
         if self._fullscreen:
+            self._old_window_width = self._window.winfo_width()
+            self._old_window_height = self._window.winfo_height()
             self._arena_canvas.configure(width=self._window.winfo_screenwidth(), height=self._window.winfo_screenheight())
-            width_scale = float(self._window.winfo_screenwidth())  / float(self._window.winfo_width())
-            height_scale = float(self._window.winfo_screenheight())  / float(self._window.winfo_height())
+            width_scale = float(self._window.winfo_screenwidth())  / float(self._old_window_width)
+            height_scale = float(self._window.winfo_screenheight())  / float(self._old_window_height)
             self._arena_canvas.scale("background", 0, 0, width_scale, height_scale)
         else:
             self._arena_canvas.configure(width=self._window.winfo_width(), height=self._window.winfo_height())
-            width_scale = float(self._window.winfo_width())  / float(self._window.winfo_screenwidth())
-            height_scale = float(self._window.winfo_height())  / float(self._window.winfo_screenheight())
+            width_scale = float(self._old_window_width)  / float(self._window.winfo_screenwidth())
+            height_scale = float(self._old_window_height)  / float(self._window.winfo_screenheight())
             self._arena_canvas.scale("background", 0, 0, width_scale, height_scale)
 
     def calibrate(self, calibration=True):

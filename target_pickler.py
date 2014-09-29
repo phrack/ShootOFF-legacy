@@ -32,14 +32,14 @@ class TargetPickler():
     # and should be unique for the webcam feed so that
     # multiple instances of a target can exist
     def load(self, target_file, canvas, canvas_manager,
-		image_regions_images, internal_target_name="_internal_name:target"):
+        image_regions_images, internal_target_name="_internal_name:target"):
 
         target = open(target_file, 'rb')
         region_object = pickle.load(target)
         target.close()
 
         regions = self._draw_target(region_object, canvas, canvas_manager,
-			image_regions_images, internal_target_name)
+                    image_regions_images, internal_target_name)
                 
         return (region_object, regions)
 
@@ -108,6 +108,8 @@ class TargetPickler():
 
             if "visible" in parsed_tags and parsed_tags["visible"].lower() == "false":
                 canvas.tag_lower(shape, "background")
+            else:
+                canvas.tag_raise(shape, "background")
 
             if shape != 0:
                 regions.append(shape)
