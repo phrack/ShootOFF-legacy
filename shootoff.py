@@ -577,6 +577,8 @@ class MainWindow:
         self._projector_arena.calibrate(self._calibrate_projector)
 
         if self._calibrate_projector:
+            self._projector_calibrator.show_threshold_slider(self._window)
+
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX, 
                 label="Stop Calibrating")
 
@@ -584,6 +586,8 @@ class MainWindow:
             self._projector_calibrated = False
 
         else:
+            self._projector_calibrator.destroy_threshold_slider()
+
             self._projector_menu.entryconfig(PROJECTOR_CALIBRATE_MENU_INDEX,
                 label="Calibrate")
 

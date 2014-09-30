@@ -4,6 +4,7 @@
 
 import cv2
 import math
+import Tkinter, ttk
 
 class ProjectorCalibrator():
     def get_projected_bbox(self):
@@ -11,7 +12,7 @@ class ProjectorCalibrator():
 
     def calibrate_projector(self, webcam_image):
         bw = cv2.cvtColor(webcam_image, cv2.cv.CV_BGR2GRAY)
-        (thresh, bw_image) = cv2.threshold(bw, 200, 255, cv2.THRESH_BINARY)
+        (thresh, bw_image) = cv2.threshold(bw, self._threshold_slider.get(), 255, cv2.THRESH_BINARY)
         contours,h = cv2.findContours(bw_image, cv2.cv.CV_RETR_EXTERNAL,
                         cv2.cv.CV_CHAIN_APPROX_SIMPLE)
 
@@ -81,6 +82,31 @@ class ProjectorCalibrator():
 
     def distance_from_origin(self, coord):
         return math.sqrt(coord[0]*2 + coord[1]*2)
+
+    def show_threshold_slider(self, parent):
+        self._window = Tkinter.Toplevel(parent)
+        self._window.title("Projector Calibration Threshold")
+        self._window.overrideredirect(True)
+
+        self._frame = ttk.Frame(self._window)
+        self._frame.pack()
+
+        self._threshold_slider = Tkinter.Scale(self._frame, from_=100, to=255,
+                                    orient=Tkinter.HORIZONTAL)
+        self._threshold_slider.set(150)
+        self._threshold_slider.pack()
+
+        self._frame.pack()
+
+        # Align this window with the main ShootOFF window
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+
+        self._window.geometry("+%d+%d" % (parent_x, 
+            parent_y+parent.winfo_height()-self._frame.winfo_height()-40))
+
+    def destroy_threshold_slider(self):
+        self._window.destroy()
 
     def __init__(self):
     	pass
