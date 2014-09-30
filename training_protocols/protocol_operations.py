@@ -204,11 +204,8 @@ class ProtocolOperations():
         
         f = wave.open(sound_file,"rb")
         
-        self._sound_cache[sound_file] = []
-        self._sound_cache[sound_file].append(f.getsampwidth())
-        self._sound_cache[sound_file].append(f.getnchannels())
-        self._sound_cache[sound_file].append(f.getframerate())
-        self._sound_cache[sound_file].append([])
+        self._sound_cache[sound_file] = (f.getsampwidth(), f.getnchannels(), 
+            f.getframerate(), [])
 
         data = f.readframes(chunk)   
         while data != '':  
