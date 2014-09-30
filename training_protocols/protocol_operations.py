@@ -11,6 +11,11 @@ import wave
 LARGEST_REGION = 0
 BOUNDING_BOX = 1
 
+SAMPWIDTH_INDEX = 0
+NCHANNELS_INDEX = 1
+FRAMERATE_INDEX = 2
+DATA_INDEX = 3
+
 # This class hold shootoff functions that should be exposed to training protocol
 # plugins. Each instance of a plugin has its own instance of this class.
 class ProtocolOperations():
@@ -22,6 +27,7 @@ class ProtocolOperations():
         self._plugin_canvas_artifacts.append(self._feed_text)
         self._added_columns = ()
         self._added_column_widths = []
+        self._sound_cache = {}
 
         self._tts_engine = pyttsx.init()
         # slow down the wpm rate otherwise they speek to fast
@@ -157,7 +163,13 @@ class ProtocolOperations():
     def clear_protocol_shot_list_columns(self):
         self._shootoff.revert_shot_list_columns()
 
-    # Play the sound in sound_file
+    def _cache_sound(self):
+        wavs = glob.glob("sounds/*.wav")
+        
+        for wav in wavs:
+            self._add_wav_cache(wav)
+
+    # Play the sound in sound_files
     def play_sound(self, sound_file):
         # if we don't do this on a nother thread we have to wait until
         # the message has finished being communicated to do anything
@@ -167,23 +179,38 @@ class ProtocolOperations():
         self._play_sound_thread.start()  
 
     def _play_sound(self, *args):
-        chunk = 1024  
-  
-        # initialize the sound file and stream
-        f = wave.open(args[0],"rb")  
+        sound_file = args[0]  
+        if sound_file not in self._sound_cache:
+            self._add_wav_cache(sound_file)
+
+        # initialize the sound file and stream  
         p = pyaudio.PyAudio()  
-        stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
-                        channels = f.getnchannels(),  
-                        rate = f.getframerate(),  
+        stream = p.open(format = p.get_format_from_width(self._sound_cache[sound_file][SAMPWIDTH_INDEX]),  
+                        channels = self._sound_cache[sound_file][NCHANNELS_INDEX],  
+                        rate = self._sound_cache[sound_file][FRAMERATE_INDEX],
                         output = True)  
 
         # play the sound file
-        data = f.readframes(chunk)   
-        while data != '':  
-            stream.write(data)  
-            data = f.readframes(chunk)  
+        for data in self._sound_cache[sound_file][DATA_INDEX]:
+            stream.write(data) 
 
         # clean up
         stream.stop_stream()  
         stream.close()  
         p.terminate() 
+
+    def _add_wav_cache(self, sound_file):
+        chunk = 1024
+        
+        f = wave.open(sound_file,"rb")
+        
+        self._sound_cache[sound_file] = []
+        self._sound_cache[sound_file].append(f.getsampwidth())
+        self._sound_cache[sound_file].append(f.getnchannels())
+        self._sound_cache[sound_file].append(f.getframerate())
+        self._sound_cache[sound_file].append([])
+
+        data = f.readframes(chunk)   
+        while data != '':  
+            self._sound_cache[sound_file][DATA_INDEX].append(data)
+            data = f.readframes(chunk) 

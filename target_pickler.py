@@ -31,21 +31,18 @@ class TargetPickler():
     # the target_name is set on every region in a target
     # and should be unique for the webcam feed so that
     # multiple instances of a target can exist
-    def load(self, target_file, canvas, canvas_manager,
-        image_regions_images, internal_target_name="_internal_name:target"):
+    def load(self, target_file, canvas, canvas_manager, internal_target_name="_internal_name:target"):
 
         target = open(target_file, 'rb')
         region_object = pickle.load(target)
         target.close()
 
         regions = self._draw_target(region_object, canvas, canvas_manager,
-                    image_regions_images, internal_target_name)
+                    internal_target_name)
                 
         return (region_object, regions)
 
-    def _draw_target(self, region_object, canvas, _canvas_manager, 
-        image_regions_images, internal_target_name):
-
+    def _draw_target(self, region_object, canvas, _canvas_manager, internal_target_name):
         regions = []
 
         for region in region_object:
@@ -63,13 +60,10 @@ class TargetPickler():
                 shape = canvas.create_image(region["coords"], image=None, 
                             tags=raw_tags)
 
-                image = Image.open(parsed_tags["_path"])
-                image_regions_images[shape] = (image, ImageTk.PhotoImage(image))
+                image = _canvas_manager.cache_image_frames(shape, parsed_tags["_path"])
+                canvas.itemconfig(shape, image=image)
 
-                canvas.itemconfig(shape, image=image_regions_images[shape][canvas_manager.PHOTOIMAGE_INDEX])
-
-                _canvas_manager.animate(shape, parsed_tags["_path"], 
-                    image_regions_images[shape][canvas_manager.PHOTOIMAGE_INDEX])
+                _canvas_manager.animate(shape, image)
 
             if parsed_tags["_shape"] == "rectangle":
                 shape = canvas.create_rectangle(region["coords"],

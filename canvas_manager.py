@@ -11,8 +11,10 @@ from target_pickler import TargetPickler
 from threading import Thread
 import time
 
-IMAGE_INDEX = 0
-PHOTOIMAGE_INDEX = 1
+DURATION_INDEX = 0
+IMAGE_INDEX = 1
+PHOTOIMAGE_INDEX = 2
+FRAMES_INDEX = 3
 
 # This class manages operations common to the webcam feed canvas
 # and the target editor canvas
@@ -147,17 +149,20 @@ class CanvasManager():
         # otherwise the images won't get scaled correctly
         if is_image:
             if isinstance(self._selection, tuple):
-                self._scale_region(event, c, is_polygon, is_image, self._selection[0])
+                self._scale_region(event, c, is_polygon, is_image, self._selection[0], 20)
             else:                
                 for region in self._canvas.find_withtag(self._selection):
                     c = event.widget.coords(region)
                     is_polygon = len(c) > 6
                     is_image = "_shape:image" in self._canvas.gettags(region)
-                    self._scale_region(event, c, is_polygon, is_image, region)
+                    if is_image:
+                        self._scale_region(event, c, is_polygon, is_image, region, 20)
+                    else: 
+                        self._scale_region(event, c, is_polygon, is_image, region)
         else:
             self._scale_region(event, c, is_polygon, is_image, self._selection)
 
-    def _scale_region(self, event, c, is_polygon, is_image, region):
+    def _scale_region(self, event, c, is_polygon, is_image, region, size_incr=1):
         # The region is scaled by a ratio, so we need to know the current
         # dimension so that we can calculate the ratio needed to scale
         # the selection by only one pixel
@@ -180,45 +185,38 @@ class CanvasManager():
             # The vertical growth direction is reverse with a polygon hack for
             # windows
             if is_polygon:
-                event.widget.scale(region, c[0], c[1], 1, (height+1)/height)
+                event.widget.scale(region, c[0], c[1], 1, (height+size_incr)/height)
             elif is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height+20), Image.NEAREST)
+                height += size_incr
             else:
-                event.widget.scale(region, c[0], c[1], 1, (height-1)/height)
+                event.widget.scale(region, c[0], c[1], 1, (height-size_incr)/height)
         elif event.keysym == "Down" and height > 1:
             if is_polygon:
-                event.widget.scale(region, c[0], c[1], 1, (height-1)/height)
+                event.widget.scale(region, c[0], c[1], 1, (height-size_incr)/height)
             elif is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width, height-20), Image.NEAREST)
+                height -= size_incr
             else:
-                event.widget.scale(region, c[0], c[1], 1, (height+1)/height)
+                event.widget.scale(region, c[0], c[1], 1, (height+size_incr)/height)
         elif event.keysym == "Right":
             if is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width+20, height), Image.NEAREST)
+                width += size_incr
             else:            
-                event.widget.scale(region, c[0], c[1], (width+1)/width, 1)
+                event.widget.scale(region, c[0], c[1], (width+size_incr)/width, 1)
         elif event.keysym == "Left" and width > 1:
             if is_image:
-                new_image = self._image_regions_images[region][IMAGE_INDEX].resize((width-20, height), Image.NEAREST)
+                width -= size_incr
             else:       
-                event.widget.scale(region, c[0], c[1], (width-1)/width, 1)
+                event.widget.scale(region, c[0], c[1], (width-size_incr)/width, 1)
 
         if is_image:
-            self._image_regions_images[region] = (new_image, ImageTk.PhotoImage(new_image))
+            tags = TagParser.parse_tags(self._canvas.gettags(region))
+            self.cache_image_frames(region, tags["_path"], width, height)
             self._canvas.itemconfig(region, image=self._image_regions_images[region][PHOTOIMAGE_INDEX])
 
-    # finish_frame is ImageTk.PhotoImage or None (if none, assume last frame)
-    def animate(self, region, image_path, finish_frame=None, width=None, height=None):
-        Thread(target=self._animate, args=(region, image_path, finish_frame, width, height)).start()
-
-    def _animate(self, region, image_path, finish_frame, width, height):
-        # Don't repeat an animation if the target is on the last frame
-        if str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX]):
-            return
-
+    def cache_image_frames(self, shape, image_path, width=None, height=None):   
         image = Image.open(image_path)
         frames = []
-
+                
         try:
             while True:
                 if width != None and height != None:
@@ -230,7 +228,8 @@ class CanvasManager():
             pass
 
         if len(frames) == 1: 
-            return
+            self._image_regions_images[shape] = (0, frames[0], ImageTk.PhotoImage(frames[0]), None)
+            return self._image_regions_images[shape][PHOTOIMAGE_INDEX]
 
         if "duration" in image.info:
             if image.info["duration"] != 0:
@@ -244,12 +243,30 @@ class CanvasManager():
         frame_images = [ImageTk.PhotoImage(first)]
 
         temp = frames[0]
-        for image in frames[1:]:
-            temp.paste(image)
+        for img in frames[1:]:
+            temp.paste(img)
             frame = temp.convert('RGBA')
             frame_images.append(ImageTk.PhotoImage(frame))
 
-        self._play_animation(region, frame_images, animation_delay, 0, finish_frame)
+        self._image_regions_images[shape] = (animation_delay, first, ImageTk.PhotoImage(first), frame_images)
+
+        return self._image_regions_images[shape][PHOTOIMAGE_INDEX]
+
+    # finish_frame is ImageTk.PhotoImage or None (if none, assume last frame)
+    def animate(self, region, finish_frame=None):
+        Thread(target=self._animate, args=(region, finish_frame)).start()
+
+    def _animate(self, region, finish_frame):
+        # Don't try to animate images that have only one frame
+        if self._image_regions_images[region][DURATION_INDEX] == 0:
+            return
+
+        # Don't repeat an animation if the target is on the last frame
+        if str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX]):
+            return
+ 
+        self._play_animation(region, self._image_regions_images[region][FRAMES_INDEX], 
+            self._image_regions_images[region][DURATION_INDEX], 0, finish_frame)
 
     def _play_animation(self, region, frames, delay, index, finish_frame):
         if index == len(frames):
@@ -295,10 +312,7 @@ class CanvasManager():
                     # Animate the named region
                     region = self._canvas.find_withtag("name:" + args[0])[0]           
                 
-                tags = TagParser.parse_tags(self._canvas.gettags(region))
-                if "_path" in tags:
-                    b = self._image_regions_images[region][IMAGE_INDEX].getbbox()
-                    self.animate(region, tags["_path"], None, b[2] - b[0], b[3] - b[1])
+                self.animate(region, None)
 
     def aggregate_targets(self, current_targets):
         # Create a list of targets, their regions, and the tags attached
@@ -346,7 +360,7 @@ class CanvasManager():
 
         target_pickler = TargetPickler()
         (region_object, regions) = target_pickler.load(
-            name, self._canvas, self, image_regions_images, target_name)
+            name, self._canvas, self, target_name)
 
         return target_name
 

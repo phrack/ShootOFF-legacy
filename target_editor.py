@@ -170,8 +170,7 @@ class TargetEditor():
 
         elif self._radio_selection.get() == IMAGE:
             # Make image a part of the target
-            image = Image.open(self._image_path)
-            self._image_regions_images[self._cursor_shape] = (image, ImageTk.PhotoImage(image))
+            self._canvas_manager.cache_image_frames(self._cursor_shape, self._image_path)
 
             self._target_canvas.itemconfig(self._cursor_shape, 
                 image=self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
