@@ -59,8 +59,9 @@ class CanvasManager():
                     outline="gold")   
 
             if (platform.system() == "Windows" and 
-                not isinstance(new_selection, tuple)):  
-                self.convert_ovals(new_selection, self.convert_to_windows_ovals)  
+                not isinstance(new_selection, tuple)):
+                
+                self.convert_ovals(new_selection, self.convert_to_windows_ovals)
 
     def draw_windows_oval(self, x, y, radius, fill, tags):
         # What we are doing here is drawing a regular polygon with
@@ -97,6 +98,11 @@ class CanvasManager():
                 oval = converter(region, fill, tags)
                 self._canvas.tag_raise(higher, oval)
                 self._canvas.delete(region)
+
+        # Restore z-order otherwise targets with ovals disappear
+        # on projector arena
+        self._canvas.tag_lower("background")
+        self._canvas.tag_lower("visible:false", "background")
 
     def convert_to_windows_ovals(self, region, fill,  tags):
         # get its coords so we can figure out how to draw it
