@@ -12,12 +12,12 @@ Windows
 
 1. Install Python 2.7
 2. Add c:\Python27 to path
-3. Install numpy-MKL-1.7.1.win-amd64-py2.7.exe
-4. Install opencv-python-2.4.6.win-amd64-py2.7.exe
-5. Install Pillow-2.2.1.win-amd64-py2.7.exe
-6. Install pywin32-218.4.win-amd64-py2.7.exe
-7. Install setuptools-1.1.6.win-amd64-py2.7.exe
-8. Install PyAudio-0.2.7.win-amd64-py2.7.exe
+3. Install numpy-MKL-1.9.0.win-amd64-py2.7.exe
+4. Install opencv-python-2.4.10.win-amd64-py2.7.exe
+5. Install Pillow-2.6.0.win-amd64-py2.7.exe
+6. Install pywin32-219.win-amd64-py2.7.exe
+7. Install setuptools-5.8.win-amd64-py2.7.exe
+8. Install PyAudio-0.2.8.win-amd64-py2.7.exe
 9. Install pyttsx - https://pypi.python.org/pypi/pyttsx  - Download pyttsx-1.1.tar.gz, extract, run "python setup.py install" in dir
 
 Aside from pyttsx, you can download dependencies here: http://www.lfd.uci.edu/~gohlke/pythonlibs
@@ -44,5 +44,6 @@ Mac
 4. brew install portaudio
 5. export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
 6. sudo easy_install pip
-7. sudo pip install numpy pyobjc PIL pyttsx pyttk pyaudio
-8. python shootoff.py
+7. sudo pip install numpy pyobjc pillow pyttsx pyttk 
+8. sudo pip install pyaudio --allow-external pyaudio --allow-unverified pyaudio
+9. python shootoff.py
