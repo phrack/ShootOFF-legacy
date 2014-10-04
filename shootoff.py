@@ -629,7 +629,7 @@ class MainWindow:
             else:
                 icon_img = Tkinter.PhotoImage(file=os.path.join("images", "icon_48x48.png"))
                 self._window.tk.call('wm','iconphoto', self._window._w, icon_img)
-        except _tkinter.TclError:
+        except:
             pass
 
         self._window.protocol("WM_DELETE_WINDOW", self.quit)
