@@ -274,6 +274,9 @@ class CanvasManager():
         self._play_animation(region, self._image_regions_images[region][FRAMES_INDEX], 
             self._image_regions_images[region][DURATION_INDEX], 0, finish_frame)
 
+        self._canvas.tag_lower("background")
+        self._canvas.tag_lower("visible:false", "background")
+
     def _play_animation(self, region, frames, delay, index, finish_frame):
         if index == len(frames):
             if finish_frame != None:
