@@ -318,10 +318,17 @@ class CanvasManager():
 
             if command == "animate":
                 if len(args) != 0:
-                    # Animate the named region
-                    region = self._canvas.find_withtag("name:" + args[0])[0]           
-                
-                self.animate(region, None)
+                    tags = TagParser.parse_tags(self._canvas.gettags(region))
+
+                    for region in self._canvas.find_withtag("name:" + args[0]):
+                        # Animate the named region
+                        internal_name = "_internal_name:" + tags["_internal_name"]
+                        current_tags = self._canvas.gettags(region)
+
+                        if internal_name in current_tags:  
+                            self.animate(region, None)         
+                else:
+                    self.animate(region, None)
 
     def aggregate_targets(self, current_targets):
         # Create a list of targets, their regions, and the tags attached
