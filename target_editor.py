@@ -170,13 +170,10 @@ class TargetEditor():
 
         elif self._radio_selection.get() == IMAGE:
             # Make image a part of the target
-            self._canvas_manager.cache_image_frames(self._cursor_shape, self._image_path)
+            image = self._canvas_manager.cache_image_frames(self._cursor_shape, self._image_path)
+            self._target_canvas.itemconfig(self._cursor_shape, image=image)
 
-            self._target_canvas.itemconfig(self._cursor_shape, 
-                image=self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
-
-            self._canvas_manager.animate(self._cursor_shape, self._image_path, 
-                self._image_regions_images[self._cursor_shape][canvas_manager.PHOTOIMAGE_INDEX])
+            self._canvas_manager.animate(self._cursor_shape, image)
 
             self._regions.append(self._cursor_shape)   
             self._create_cursor_shape(event) 
