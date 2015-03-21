@@ -97,12 +97,26 @@ class ProjectorArena():
     def arena_height(self):
         return self._arena_canvas.winfo_height()
 
+    def add_target_loc(self, name, x, y):
+        target_name = self.add_target(name)
+
+        coords = self._arena_canvas.bbox(target_name)
+
+        x_trans = x - coords[0]
+        y_trans = y - coords[1]
+
+        self._arena_canvas.move(target_name, x_trans, y_trans)
+
+        return target_name
+
     def add_target(self, name):
         target_name = self._canvas_manager.add_target(name, self._image_regions_images)
         self._targets.append(target_name)
 
         if len(self._arena_canvas.find_withtag("target_cover")) > 0:
             self._arena_canvas.tag_lower(target_name, "target_cover")
+
+        return target_name
 
     def toggle_visibility(self):
         if self._visible:
@@ -134,12 +148,16 @@ class ProjectorArena():
                                                        target_name)
         self._selected_target = target_name
 
+    def delete_target(self, target_name):
+        for target in self._targets:
+            if target == target_name:
+                self._targets.remove(target)
+
+        self._arena_canvas.delete(target_name)
+
     def canvas_delete_target(self, event):
         if (self._selected_target):
-            for target in self._targets:
-                if target == self._selected_target:
-                    self._targets.remove(target)
-            event.widget.delete(self._selected_target)
+            self.delete_target(self._selected_target)
             self._selected_target = ""
 
     def build_gui(self, parent):

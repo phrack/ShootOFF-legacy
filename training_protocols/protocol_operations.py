@@ -169,6 +169,21 @@ class ProtocolOperations():
         for wav in wavs:
             self._add_wav_cache(wav)
 
+    # Adds a target to the projector arena where name is the name of the .target file to use
+    # (e.g. targets/ISSF.target) and x, y is the location of the top left corner
+    # of the target
+    def add_projector_target(self, name, x, y):
+        arena = self._shootoff.get_projector_arena()
+        target_name = arena.add_target_loc(name, x, y);
+        self._plugin_canvas_artifacts.append(target_name)
+        
+        return target_name
+
+    def delete_projector_target(self, target_name):
+        arena = self._shootoff.get_projector_arena()
+        arena.delete_target(target_name);
+        self._plugin_canvas_artifacts.remove(target_name)
+
     # Play the sound in sound_files
     def play_sound(self, sound_file):
         # if we don't do this on a nother thread we have to wait until

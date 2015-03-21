@@ -614,6 +614,9 @@ class MainWindow:
             self._projector_menu.entryconfig(PROJECTOR_ADD_TARGET_MENU_INDEX, 
                 state=Tkinter.DISABLED)
 
+    def get_projector_arena(self):
+        return self._projector_arena
+
     def projector_arena_closed(self):
         if self._calibrate_projector:
             self.calibrate_projector()
