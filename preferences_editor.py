@@ -16,6 +16,7 @@ DEFAULT_USE_VIRTUAL_MAGAZINE = False
 DEFAULT_VIRTUAL_MAGAZINE = 7
 DEFAULT_USE_MALFUNCTIONS = False
 DEFAULT_MALFUNCTION_PROBABILITY = 10.0
+DEFAULT_VIDCAM = 1
 
 class PreferencesEditor():
     @staticmethod
@@ -42,6 +43,12 @@ class PreferencesEditor():
                     configurator.MARKER_RADIUS)
             except ConfigParser.NoOptionError:
                 preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
+                
+            try:
+                preferences[configurator.VIDCAM] = config.getint("ShootOFF",
+                    configurator.VIDCAM)
+            except ConfigParser.NoOptionError:
+                preferences[configurator.VIDCAM] = DEFAULT_VIDCAM
 
             try:
                 preferences[configurator.IGNORE_LASER_COLOR] = config.get("ShootOFF",
@@ -83,6 +90,7 @@ class PreferencesEditor():
             preferences[configurator.DETECTION_RATE] = DEFAULT_DETECTION_RATE
             preferences[configurator.LASER_INTENSITY] = DEFAULT_LASER_INTENSITY
             preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
+            preferences[configurator.VIDCAM] = DEFAULT_VIDCAM
             preferences[configurator.IGNORE_LASER_COLOR] = DEFAULT_IGNORE_LASER_COLOR
             preferences[configurator.USE_VIRTUAL_MAGAZINE] = DEFAULT_USE_VIRTUAL_MAGAZINE
             preferences[configurator.VIRTUAL_MAGAZINE] = DEFAULT_VIRTUAL_MAGAZINE
@@ -96,6 +104,8 @@ class PreferencesEditor():
                 str(preferences[configurator.LASER_INTENSITY]))
             config.set("ShootOFF", configurator.MARKER_RADIUS, 
                 str(preferences[configurator.MARKER_RADIUS]))
+            config.set("ShootOFF", configurator.VIDCAM, 
+                str(preferences[configurator.VIDCAM]))
             config.set("ShootOFF", configurator.IGNORE_LASER_COLOR, 
                 preferences[configurator.IGNORE_LASER_COLOR])  
             config.set("ShootOFF", configurator.USE_VIRTUAL_MAGAZINE, 
@@ -131,6 +141,12 @@ class PreferencesEditor():
         else:
             self._preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
+        if self._vidcam_spinbox.get():
+            self._preferences[configurator.VIDCAM] = int(
+                self._vidcam_spinbox.get())
+        else:
+            self._preferences[configurator.VIDCAM] = DEFAULT_VIDCAM
+
         if self._ignore_laser_color_combo.get():
             self._preferences[configurator.IGNORE_LASER_COLOR] = self._ignore_laser_color_combo.get()
         else:
@@ -156,6 +172,8 @@ class PreferencesEditor():
             str(self._preferences[configurator.LASER_INTENSITY]))
         self._config_parser.set("ShootOFF", configurator.MARKER_RADIUS,
             str(self._preferences[configurator.MARKER_RADIUS]))
+        self._config_parser.set("ShootOFF", configurator.VIDCAM,
+            str(self._preferences[configurator.VIDCAM]))
         self._config_parser.set("ShootOFF", configurator.IGNORE_LASER_COLOR,
             self._preferences[configurator.IGNORE_LASER_COLOR])
         self._config_parser.set("ShootOFF", configurator.USE_VIRTUAL_MAGAZINE,

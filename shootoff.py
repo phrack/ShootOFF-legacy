@@ -783,7 +783,7 @@ class MainWindow:
         self._calibrate_projector = False
         self._projector_calibrated = False
 
-        self._cv = cv2.VideoCapture(0)
+        self._cv = cv2.VideoCapture(self._preferences[configurator.VIDCAM])
 
         if self._cv.isOpened():
             width = self._cv.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
@@ -826,12 +826,17 @@ class MainWindow:
                                                  name="shot_detection_thread")
             self._shot_detection_thread.start()
         else:
-            tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
-                "could not be initialized either because there is no webcam or " +
-                "we cannot connect to it. ShootOFF will shut down.")
-            self._logger.critical("Video capturing could not be initialized either " +
-                "because there is no webcam or we cannot connect to it.")
-            self._shutdown = True
+			tkMessageBox.showwarning(
+            "Open Video Camera",
+            "Cannot open this vidcam (%d)\n" % self._preferences[configurator.VIDCAM]
+			)
+			
+			tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
+			"could not be initialized either because there is no webcam or " +
+			"we cannot connect to it. ShootOFF will shut down.")
+			self._logger.critical("Video capturing could not be initialized either " +
+			"because there is no webcam or we cannot connect to it.")
+			self._shutdown = True
 
     def main(self):
         if not self._shutdown:

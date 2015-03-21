@@ -12,6 +12,7 @@ USE_VIRTUAL_MAGAZINE = "usevirtualmagazine"
 VIRTUAL_MAGAZINE = "virtualmagazine"
 USE_MALFUNCTIONS = "usemalfunctions"
 MALFUNCTION_PROBABILITY = "malfunctionprobability"
+VIDCAM = "vidcam" # first detected == 0
 
 class Configurator():
     def _check_rate(self, rate):
@@ -34,6 +35,13 @@ class Configurator():
             raise argparse.ArgumentTypeError("MARKER_RADIUS must be a number " +
                 "between 1 and 20")
         return value  
+        
+    def _check_vidcam(self, vidcam):
+        value = int(vidcam)
+        if value < 0 or value > 2:
+            raise argparse.ArgumentTypeError("VIDCAM must be a number " +
+                "between 0 and 2")
+        return value
 
     def _check_ignore_laser_color(self, ignore_laser_color):
         ignore_laser_color = ignore_laser_color.lower()
@@ -77,6 +85,8 @@ class Configurator():
                 "shots")
         parser.add_argument("-m", "--marker-radius", type=self._check_radius,
             help="sets the radius of shot markers in pixels [1,20]")
+        parser.add_argument("-v", "--vidcam", type=self._check_vidcam,
+            help="sets video camera to use [0,2]")
         parser.add_argument("-c", "--ignore-laser-color",
             type=self._check_ignore_laser_color,
             help="sets the color of laser that should be ignored by ShootOFF (green " +
@@ -100,6 +110,9 @@ class Configurator():
 
         if args.marker_radius:
             preferences[MARKER_RADIUS] = int(args.marker_radius)
+            
+        if args.vidcam >= 0:
+            preferences[VIDCAM] = int(args.vidcam)
 
         if args.ignore_laser_color:
             preferences[IGNORE_LASER_COLOR] = args.ignore_laser_color
