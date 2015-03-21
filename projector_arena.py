@@ -67,6 +67,9 @@ class ProjectorArena():
             self._window.geometry("%sx%s" % (self._old_window_width,
                     self._old_window_height))
 
+    def get_arena_dimensions(self):
+        return (self._arena_canvas.winfo_width(), self._arena_canvas.winfo_height())
+
     def calibrate(self, calibration=True):
         if calibration:
             # This is to cover existing targets
@@ -127,6 +130,9 @@ class ProjectorArena():
             self._window.deiconify()
 
         self._visible = not self._visible
+
+    def is_visible(self):
+        return self._visible
 
     def canvas_click(self, event):
         # find the target that was selected
