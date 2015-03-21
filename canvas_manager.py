@@ -348,6 +348,18 @@ class CanvasManager():
 
         return targets
 
+    def is_transparent_pixel(self, region, x, y):
+        bbox = self._canvas.bbox(region)
+        x = x - bbox[0]
+        y = y - bbox[1]
+
+        hit_location_color = self._image_regions_images[region][IMAGE_INDEX].getpixel((x, y))   
+
+        if (hit_location_color[3] == 0):
+            return True
+
+        return False        
+
     def is_animated(self, regions):
         for region in regions:
             for tag in self._canvas.gettags(region):
