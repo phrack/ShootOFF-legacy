@@ -627,7 +627,7 @@ class MainWindow:
             if platform.system() == "Windows":            
                 self._window.iconbitmap("images\windows_icon.ico")
             else:
-                icon_img = Tkinter.PhotoImage(file=os.path.join("images", "icon_48x48.png"))
+                icon_img = Tkinter.PhotoImage(file=os.path.join("images", "icon_48x48.gif"))
                 self._window.tk.call('wm','iconphoto', self._window._w, icon_img)
         except:
             self._logger.warning("Failed to set main window icon.")
