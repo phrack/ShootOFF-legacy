@@ -23,9 +23,9 @@ class Configurator():
 
     def _check_intensity(self, intensity):
         value = int(intensity)
-        if value < 0 or value > 255:
+        if value < 1 or value > 255:
             raise argparse.ArgumentTypeError("LASER_INTENSITY must be a number " +
-                "between 0 and 255")
+                "between 1 and 255")
         return value   
 
     def _check_radius(self, radius):
@@ -72,7 +72,7 @@ class Configurator():
                 "this should be set to about the length of time your laser trainer " +
                 "stays on for each shot, typically about 100 ms")
         parser.add_argument("-i", "--laser-intensity", type=self._check_intensity, 
-            help="sets the intensity threshold for detecting the laser [0,255]. " +
+            help="sets the intensity threshold for detecting the laser [1,255]. " +
                 "this should be as high as you can set it while still detecting " +
                 "shots")
         parser.add_argument("-m", "--marker-radius", type=self._check_radius,

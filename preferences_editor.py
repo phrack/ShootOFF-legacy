@@ -208,7 +208,7 @@ class PreferencesEditor():
         ttk.Label(self._frame, 
             text="Laser Intensity: ").grid(column=0, row=1)
 
-        self._laser_intensity_spinbox = Tkinter.Spinbox(self._frame, from_=0,
+        self._laser_intensity_spinbox = Tkinter.Spinbox(self._frame, from_=1,
             to=255)
         self._laser_intensity_spinbox.delete(0, Tkinter.END)
         self._laser_intensity_spinbox.insert(0, 
@@ -306,7 +306,7 @@ class PreferencesEditor():
             return False
 
     def check_laser_intensity(self, P):
-        if (P.isdigit() and int(P) >= 0 and int(P) <= 255) or not P:
+        if (P.isdigit() and int(P) > 0 and int(P) <= 255) or not P:
             return True
         else:
             return False
