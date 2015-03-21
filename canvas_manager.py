@@ -12,9 +12,10 @@ from threading import Thread
 import time
 
 DURATION_INDEX = 0
-IMAGE_INDEX = 1
-PHOTOIMAGE_INDEX = 2
-FRAMES_INDEX = 3
+FIRST_IMAGE_INDEX = 1
+FIRST_PHOTOIMAGE_INDEX = 2
+LAST_IMAGE_INDEX = 3
+FRAMES_INDEX = 4
 
 # This class manages operations common to the webcam feed canvas
 # and the target editor canvas
@@ -180,7 +181,7 @@ class CanvasManager():
             width = max(c[::2]) - min(c[::2])
             height = max(c[1::2]) - min(c[1::2])
         elif is_image:
-            b = self._image_regions_images[region][IMAGE_INDEX].getbbox()
+            b = self._image_regions_images[region][FIRST_IMAGE_INDEX].getbbox()
             width = b[2] - b[0]
             height = b[3] - b[1]
         else:
@@ -217,7 +218,7 @@ class CanvasManager():
         if is_image:
             tags = TagParser.parse_tags(self._canvas.gettags(region))
             self.cache_image_frames(region, tags["_path"], width, height)
-            self._canvas.itemconfig(region, image=self._image_regions_images[region][PHOTOIMAGE_INDEX])
+            self._canvas.itemconfig(region, image=self._image_regions_images[region][FIRST_PHOTOIMAGE_INDEX])
 
     def cache_image_frames(self, shape, image_path, width=None, height=None):   
         image = Image.open(image_path)
@@ -234,8 +235,8 @@ class CanvasManager():
             pass
 
         if len(frames) == 1: 
-            self._image_regions_images[shape] = (0, frames[0], ImageTk.PhotoImage(frames[0]), None)
-            return self._image_regions_images[shape][PHOTOIMAGE_INDEX]
+            self._image_regions_images[shape] = (0, frames[0], ImageTk.PhotoImage(frames[0]), frames[0], None)
+            return self._image_regions_images[shape][FIRST_PHOTOIMAGE_INDEX]
 
         if "duration" in image.info:
             if image.info["duration"] != 0:
@@ -254,25 +255,41 @@ class CanvasManager():
             frame = temp.convert('RGBA')
             frame_images.append(ImageTk.PhotoImage(frame))
 
-        self._image_regions_images[shape] = (animation_delay, first, ImageTk.PhotoImage(first), frame_images)
+        self._image_regions_images[shape] = (animation_delay, first, ImageTk.PhotoImage(first), frames[len(frames) - 1].convert('RGBA'), frame_images)
 
-        return self._image_regions_images[shape][PHOTOIMAGE_INDEX]
+        return self._image_regions_images[shape][FIRST_PHOTOIMAGE_INDEX]
 
     # finish_frame is ImageTk.PhotoImage or None (if none, assume last frame)
-    def animate(self, region, finish_frame=None):
-        Thread(target=self._animate, args=(region, finish_frame)).start()
+    def animate(self, region, finish_frame=None, reverse=False):
+        Thread(target=self._animate, args=(region, finish_frame, reverse)).start()
 
-    def _animate(self, region, finish_frame):
+    def _animate(self, region, finish_frame, reverse):
         # Don't try to animate images that have only one frame
         if self._image_regions_images[region][DURATION_INDEX] == 0:
             return
 
-        # Don't repeat an animation if the target is on the last frame
-        if str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX]):
-            return
- 
-        self._play_animation(region, self._image_regions_images[region][FRAMES_INDEX], 
+        frames = list(self._image_regions_images[region][FRAMES_INDEX])
+        
+        ran_reversed = False
+        if str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][FIRST_PHOTOIMAGE_INDEX]):
+            # Don't repeat a non-reversable animation if the target is on the last frame
+            if not reverse:
+                return
+            else:  # If it's a reversable frame and we are on the last frame, then reverse the animation
+                ran_reversed = True
+                frames.reverse()
+
+        self._play_animation(region, frames, 
             self._image_regions_images[region][DURATION_INDEX], 0, finish_frame)
+
+        if reverse and ran_reversed:
+            self._image_regions_images[region] = (
+                                                    self._image_regions_images[region][DURATION_INDEX],
+                                                    self._image_regions_images[region][FIRST_IMAGE_INDEX],
+                                                    self._canvas.itemcget(region, "image"),
+                                                    self._image_regions_images[region][LAST_IMAGE_INDEX],
+                                                    self._image_regions_images[region][FRAMES_INDEX]
+                                                 )
 
         self._canvas.tag_lower("background")
         self._canvas.tag_lower("visible:false", "background")
@@ -291,9 +308,9 @@ class CanvasManager():
         self._play_animation(region, frames, delay, index+1, finish_frame) 
 
     def execute_region_commands(self, region, command_list, operations):
-        # Don't run commands if the region is an image that is on the last frame
-        if ("_shape:image" in self._canvas.gettags(region) and 
-            str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][PHOTOIMAGE_INDEX])):
+        # Don't run commands if the region is a non-reversable image that is on the last frame
+        if ("command:reverse" not in self._canvas.gettags(region) and "_shape:image" in self._canvas.gettags(region) and 
+            str(self._canvas.itemcget(region, "image")) != str(self._image_regions_images[region][FIRST_PHOTOIMAGE_INDEX])):
             return
 
         args = []
@@ -317,6 +334,10 @@ class CanvasManager():
                 operations.play_sound(args[0])
 
             if command == "animate":
+                reverse = False
+                if "reverse" in command_list:
+                    reverse = True
+
                 if len(args) != 0:
                     tags = TagParser.parse_tags(self._canvas.gettags(region))
 
@@ -326,9 +347,9 @@ class CanvasManager():
                         current_tags = self._canvas.gettags(region)
 
                         if internal_name in current_tags:  
-                            self.animate(region, None)         
+                            self.animate(region, None, reverse)         
                 else:
-                    self.animate(region, None)
+                    self.animate(region, None, reverse)
 
     def aggregate_targets(self, current_targets):
         # Create a list of targets, their regions, and the tags attached
@@ -352,8 +373,11 @@ class CanvasManager():
         bbox = self._canvas.bbox(region)
         x = x - bbox[0]
         y = y - bbox[1]
-
-        hit_location_color = self._image_regions_images[region][IMAGE_INDEX].getpixel((x, y))   
+ 
+        if str(self._canvas.itemcget(region, "image")) == str(self._image_regions_images[region][FIRST_PHOTOIMAGE_INDEX]):
+            hit_location_color = self._image_regions_images[region][FIRST_IMAGE_INDEX].getpixel((x, y))
+        else:
+            hit_location_color = self._image_regions_images[region][LAST_IMAGE_INDEX].getpixel((x, y))
 
         if (hit_location_color[3] == 0):
             return True
@@ -372,7 +396,7 @@ class CanvasManager():
         image_regions = self._canvas.find_withtag("_shape:image")
 
         for region in image_regions:
-            self._canvas.itemconfig(region, image=self._image_regions_images[region][PHOTOIMAGE_INDEX])
+            self._canvas.itemconfig(region, image=self._image_regions_images[region][FIRST_PHOTOIMAGE_INDEX])
 
     def is_background(self, selection):
         if "background" in self._canvas.gettags(selection):
