@@ -152,7 +152,7 @@ class MainWindow:
 
                     # If we couldn't detect a laser color, it's probably not a
                     # shot
-                    if (not found_noise and laser_color is not None and
+                    if (laser_color is not None and
                         self._preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
 
                         self.handle_shot(laser_color, x, y)
