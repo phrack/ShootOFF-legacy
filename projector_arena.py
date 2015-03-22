@@ -19,6 +19,10 @@ class ProjectorArena():
         for region in reversed(regions):
             tags = TagParser.parse_tags(self._arena_canvas.gettags(region))
 
+            # If we hit an image on a transparent pixel, ignore the "hit"
+            if "_shape:image" in self._arena_canvas.gettags(region) and self._canvas_manager.is_transparent_pixel(region, x, y):
+                    continue
+
             if "_internal_name" in tags and "command" in tags:
                 self._canvas_manager.execute_region_commands(region, tags["command"], 
                     self._shootoff.get_protocol_operations())

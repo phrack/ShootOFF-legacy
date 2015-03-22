@@ -379,7 +379,7 @@ class CanvasManager():
         else:
             hit_location_color = self._image_regions_images[region][LAST_IMAGE_INDEX].getpixel((x, y))
 
-        if (hit_location_color[3] == 0):
+        if (type(hit_location_color) is tuple and hit_location_color[3] == 0):
             return True
 
         return False        

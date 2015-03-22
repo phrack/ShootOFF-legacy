@@ -63,8 +63,8 @@ class DuelingTree(ITrainingProtocol):
                     self._targets_on_right.remove(tags["subtarget"])
                     hit_by = "right"
 
-            self._operations.append_shot_item_values(shot_list_item,
-                (hit_by,))
+                self._operations.append_shot_item_values(shot_list_item,
+                    (hit_by,))
 
             if (len(self._targets_on_right) == 6):
                 self._left_score += 1
