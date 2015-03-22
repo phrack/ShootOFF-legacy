@@ -185,6 +185,14 @@ class MainWindow:
                 # Translate the coordinates into the arena's coordinate system
                 hit_projector_region, projector_region_tags = self._projector_arena.handle_shot(laser_color, 
                     (x - bbox[0])*x_scale, (y - bbox[1])*y_scale)
+        # This makes sure click to shoot can be used for the projector too
+        if self._preferences[configurator.DEBUG]:
+            frame_height = len(self._webcam_frame)
+            frame_width = len(self._webcam_frame[0])
+            x_scale = float(self._projector_arena.arena_width()) / float(frame_width)
+            y_scale = float(self._projector_arena.arena_height()) / float(frame_height)
+            hit_projector_region, projector_region_tags = self._projector_arena.handle_shot(laser_color, 
+                    (x)*x_scale, (y)*y_scale)
       
         # Start the shot timer if it has not been started yet,
         # otherwise get the time offset
