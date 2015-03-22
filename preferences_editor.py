@@ -141,12 +141,6 @@ class PreferencesEditor():
         else:
             self._preferences[configurator.MARKER_RADIUS] = DEFAULT_MARKER_RADIUS
 
-        if self._vidcam_spinbox.get():
-            self._preferences[configurator.VIDCAM] = int(
-                self._vidcam_spinbox.get())
-        else:
-            self._preferences[configurator.VIDCAM] = DEFAULT_VIDCAM
-
         if self._ignore_laser_color_combo.get():
             self._preferences[configurator.IGNORE_LASER_COLOR] = self._ignore_laser_color_combo.get()
         else:
