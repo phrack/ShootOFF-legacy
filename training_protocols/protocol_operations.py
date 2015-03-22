@@ -187,14 +187,15 @@ class ProtocolOperations():
         arena.delete_target(target_name);
     
     def get_target_name(self, region):
-        for tag in self._arena_canvas.gettags(region):
+        arena = self._shootoff.get_projector_arena()
+        for tag in arena.get_canvas().gettags(region):
             if tag.startswith("_internal_name:"):
                 return tag
 
     # Returns a (width, height) tuple for the projector arena's canvas
     def get_projector_arena_dimensions(self):
         arena = self._shootoff.get_projector_arena()
-        return arena.get_arena_dimensions()
+        return (arena.arena_width(), arena.arena_height())
 
     # Play the sound in sound_files
     def play_sound(self, sound_file):

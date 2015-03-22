@@ -51,12 +51,12 @@ class ShootDontShoot(ITrainingProtocol):
             target_name = self._operations.get_target_name(region)
 
             if tags["subtarget"] == "shoot":
-                self._operations._remove_target(target_name)
+                self._remove_target(target_name)
                 self._current_shoot_targets.remove(target_name)
                 self._operations.append_shot_item_values(shot_list_item,
                     (tags["subtarget"],))
             elif tags["subtarget"] == "dont_shoot":
-                self._operations._remove_target(target_name)
+                self._remove_target(target_name)
                 self._current_dont_shoot_targets.remove(target_name)
                 self._bad_hits += 1
                 self._operations.append_shot_item_values(shot_list_item,
@@ -65,7 +65,7 @@ class ShootDontShoot(ITrainingProtocol):
                 
     def _new_round(self):
         # Wait ten seconds before starting another round
-        self._wait_event.wait(3)
+        self._wait_event.wait(10)
 
         if self._continue_protocol:
             missed = len(self._current_shoot_targets)

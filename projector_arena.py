@@ -69,9 +69,6 @@ class ProjectorArena():
             self._window.geometry("%sx%s" % (self._old_window_width,
                     self._old_window_height))
 
-    def get_arena_dimensions(self):
-        return (self._arena_canvas.winfo_width(), self._arena_canvas.winfo_height())
-
     def calibrate(self, calibration=True):
         if calibration:
             # This is to cover existing targets
@@ -95,6 +92,9 @@ class ProjectorArena():
     
     def set_training_protocol(self, training):
         self._loaded_training = training
+
+    def get_canvas(self):
+        return self._arena_canvas
 
     def arena_width(self):
         return self._arena_canvas.winfo_width()
