@@ -6,6 +6,8 @@ from canvas_manager import CanvasManager
 from tag_parser import TagParser
 import Tkinter, ttk
 
+ARENA_BORDER_WIDTH = 3
+
 class ProjectorArena():
     def handle_shot(self, laser_color, x, y):
         hit_region = None
@@ -76,8 +78,8 @@ class ProjectorArena():
             self._arena_canvas.create_rectangle(0, 0, self._arena_canvas.winfo_width(), 
                 self._arena_canvas.winfo_height(), fill="black", tags=("target_cover"))
 
-            x = self._window.winfo_width()
-            y = self._window.winfo_height()
+            x = self._arena_canvas.winfo_width()
+            y = self._arena_canvas.winfo_height()
 
             self._arena_canvas.create_polygon(0, 0, 250, 0, 125, 250, 0, 0, 
                 fill="white", tags=("top_left_calibrator"))
@@ -179,7 +181,7 @@ class ProjectorArena():
         self._frame.pack()
 
         self._arena_canvas = Tkinter.Canvas(self._frame, 
-            width=600, height=480, background="gray15", bd=-1)
+            width=600, height=480, background="gray15", bd=ARENA_BORDER_WIDTH)
         self._arena_canvas.pack()
 
         self._arena_canvas.bind('<ButtonPress-1>', self.canvas_click)
