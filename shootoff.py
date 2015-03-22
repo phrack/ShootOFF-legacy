@@ -128,23 +128,34 @@ class MainWindow:
         if not self._seen_interference:
             self.detect_interfence(frame_thresh)
 
-        # Find min and max values on the black and white frame
-        min_max = cv2.minMaxLoc(frame_thresh)
+        # Detect shots by splitting the frame into 9 regions (3 horizontally, and
+        # and 3 vertically -- picture a tic-tac-toe board) and detecting shots in
+        # each region separately
+        frame_height = len(frame_thresh)
+        frame_width = len(frame_thresh[0])
 
-        # The minimum and maximum are the same if there was
-        # nothing detected
-        if (min_max[0] != min_max[1]):
-            x = min_max[3][0]
-            y = min_max[3][1]
+        sub_height = frame_height / 3
+        sub_width = frame_width / 3
 
-            laser_color = self.detect_laser_color(x, y)
+        for sub_y in range(0, frame_height, sub_height):
+            for sub_x in range(0, frame_width, sub_width):
+                # Find min and max values on the black and white frame
+                min_max = cv2.minMaxLoc(frame_thresh[sub_y:sub_y + sub_height,sub_x:sub_x + sub_width])
+                            
+                # The minimum and maximum are the same if there was
+                # nothing detected
+                if (min_max[0] != min_max[1]):
+                    x = min_max[3][0] + sub_x
+                    y = min_max[3][1] + sub_y
 
-            # If we couldn't detect a laser color, it's probably not a
-            # shot
-            if (laser_color is not None and
-                self._preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
+                    laser_color = self.detect_laser_color(x, y)
 
-                self.handle_shot(laser_color, x, y)
+                    # If we couldn't detect a laser color, it's probably not a
+                    # shot
+                    if (not found_noise and laser_color is not None and
+                        self._preferences[configurator.IGNORE_LASER_COLOR] not in laser_color):
+
+                        self.handle_shot(laser_color, x, y)
 
         if self._shutdown == False:
             self._window.after(self._preferences[configurator.DETECTION_RATE],
@@ -269,10 +280,20 @@ class MainWindow:
         g = mean_color[1]
         b = mean_color[0]
 
-        if (r > g) and (r > b):
+        # We only detect a color if the largest component is at least
+        # 2% bigger than the other components. This is based on the
+        # heuristic that noise tends to have color values that are very
+        # similar
+        if (g == 0 or b == 0): 
+            return None
+
+        if (r / g) > 1.02 and (r / b) > 1.02:
             return "red"
 
-        if (g > r) and (g > b):
+        if (r == 0 or b == 0): 
+            return None
+
+        if (g / r) > 1.02 and (g / b) > 1.02:
             return "green2"
 
         return None
