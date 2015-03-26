@@ -401,7 +401,9 @@ class MainWindow:
 
         self._shot_timer_start = None
         shot_entries = self._shot_timer_tree.get_children()
-        for shot in shot_entries: self._shot_timer_tree.delete(shot)
+        for shot in shot_entries: 
+            if self._shot_timer_tree.exists(shot):
+                self._shot_timer_tree.delete(shot)
         self._previous_shot_time_selection = None
 
         self._webcam_canvas.focus_set()
