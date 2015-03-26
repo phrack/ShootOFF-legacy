@@ -629,7 +629,15 @@ class MainWindow:
                 label="Calibrate")
 
             self.pause_shot_detection(False)
-            self._projector_calibrated = True
+
+            if (self._projector_calibrator.get_projected_bbox() == (0, 0, 0, 0)):
+			    tkMessageBox.showerror("Couldn't Calibrate Projector Arena", 
+                    "A calibration lock was never achieved for the projector arena. " +
+                    "Shots on the arena will not be detected.")
+            else:
+                self._projector_calibrated = True
+                self._logger.info("Calibrated the projector arena with bbox: " + 
+                    str(self._projector_calibrator.get_projected_bbox()))
 
     def toggle_projector_menus(self, state=True):
         if state:
