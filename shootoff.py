@@ -88,6 +88,7 @@ class MainWindow:
         self._editor_image = ImageTk.PhotoImage(
             image=Image.fromarray(webcam_image))
 
+        self._webcam_canvas.delete("background")
         webcam_image = self._webcam_canvas.create_image(0, 0, image=self._image,
             anchor=Tkinter.NW, tags=("background"))
 
