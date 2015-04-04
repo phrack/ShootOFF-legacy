@@ -200,7 +200,6 @@ class CanvasManager():
             else:
                 if height-size_incr <= 0: return
                 scale_factor = (height-size_incr)/height
-                print height, scale_factor
                 if (scale_factor > 0): 
                     event.widget.scale(region, c[0], c[1], 1, scale_factor)
         elif event.keysym == "Down":
@@ -213,7 +212,6 @@ class CanvasManager():
                 height -= size_incr
             else:
                 scale_factor = (height+size_incr)/height
-                print height, scale_factor
                 if (scale_factor > 0): 
                     event.widget.scale(region, c[0], c[1], 1, scale_factor)
         elif event.keysym == "Right":
