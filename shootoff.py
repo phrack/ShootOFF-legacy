@@ -419,7 +419,7 @@ class MainWindow:
         if self._preferences[configurator.USE_VIRTUAL_MAGAZINE]:
             self._virtual_magazine_rounds = self._preferences[configurator.VIRTUAL_MAGAZINE]
 
-        if self._projector_calibrated:
+        if self.get_projector_arena().is_visible():
             self._projector_arena.reset()
 
     def quit(self):

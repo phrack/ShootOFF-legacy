@@ -93,6 +93,7 @@ class DuelingTree(ITrainingProtocol):
 
         self._protocol_is_resetting = True
         self._operations.reset()
+        self._protocol_is_resetting = False
         self._operations.pause_shot_detection(False)
 
         message = "left score: %d\nright score: %d" % (self._left_score, 
