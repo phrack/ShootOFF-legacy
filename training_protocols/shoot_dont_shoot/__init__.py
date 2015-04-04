@@ -121,6 +121,7 @@ class ShootDontShoot(ITrainingProtocol):
 
     def destroy(self):
         self._continue_protocol = False
+        self._wait_event.set()
         self._remove_old_targets(self._current_shoot_targets)
         self._remove_old_targets(self._current_dont_shoot_targets) 
         

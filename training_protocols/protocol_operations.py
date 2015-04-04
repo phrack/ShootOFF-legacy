@@ -28,6 +28,7 @@ class ProtocolOperations():
         self._added_columns = ()
         self._added_column_widths = []
         self._sound_cache = {}
+        self._destroy = False
 
         self._tts_engine = pyttsx.init()
         # slow down the wpm rate otherwise they speek to fast
@@ -105,6 +106,7 @@ class ProtocolOperations():
         self._shootoff.append_shot_list_column_data(item, values)
 
     def destroy(self):
+        self._destroy = True
         # pyttsx errors out if we try to end a loop that isn't running, so
         # we need to check if we are in a loop first, but the only good
         # way to do this right now is to check an internal flag. This hack
@@ -145,6 +147,9 @@ class ProtocolOperations():
         self._say_thread.start()  
     
     def _say(self, *args):
+        if self._destroy:
+            return
+
         self._tts_engine.say(args[0])
         if hasattr(self._tts_engine, "_inLoop") and self._tts_engine._inLoop:
             self._tts_engine.iterate()
@@ -207,6 +212,9 @@ class ProtocolOperations():
         self._play_sound_thread.start()  
 
     def _play_sound(self, *args):
+        if self._destroy:
+            return
+
         sound_file = args[0]  
         if sound_file not in self._sound_cache:
             self._add_wav_cache(sound_file)
@@ -220,6 +228,8 @@ class ProtocolOperations():
 
         # play the sound file
         for data in self._sound_cache[sound_file][DATA_INDEX]:
+            if self._destroy:
+                break
             stream.write(data) 
 
         # clean up

@@ -12,7 +12,8 @@ class DuelingTree(ITrainingProtocol):
         # We need to make sure we start with a clean slate because the position
         # of the plates matter
         self._operations.reset()
-
+        
+        self._continue_protocol = True
         self._protocol_is_resetting = False
         self._left_score = 0
         self._right_score = 0
@@ -79,11 +80,12 @@ class DuelingTree(ITrainingProtocol):
                     self._right_score)
 
         self._operations.show_text_on_feed(message)
-        self._operations.pause_shot_detection(True)
+        if self._continue_protocol:        
+            self._operations.pause_shot_detection(True)
 
-        self._new_round_thread = Thread(target=self._new_round,
-                                          name="new_round_thread")
-        self._new_round_thread.start()
+            self._new_round_thread = Thread(target=self._new_round,
+                                              name="new_round_thread")
+            self._new_round_thread.start()
 
     def _new_round(self):
         # Wait five seconds before starting another round
@@ -111,6 +113,8 @@ class DuelingTree(ITrainingProtocol):
         self._find_targets(targets)
 
     def destroy(self):
+        self._continue_protocol = False
+        self._wait_event.set()
         pass
 
 def get_info():
