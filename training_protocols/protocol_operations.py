@@ -28,6 +28,7 @@ class ProtocolOperations():
         self._added_columns = ()
         self._added_column_widths = []
         self._sound_cache = {}
+        self._tiw = None
         self._destroy = False
 
         self._tts_engine = pyttsx.init()
@@ -39,8 +40,9 @@ class ProtocolOperations():
     # delay in seconds. Notify interval points to a function that gets the min
     # and max values for the interval as parameters.
     def get_delayed_start_interval(self, parent, notifyinterval=None):
-        tiw = TimerIntervalWindow(parent, notifyinterval)
-        parent.wait_window(tiw._window)
+        self._tiw = TimerIntervalWindow(parent, notifyinterval)
+        parent.wait_window(self._tiw._window)
+        self._tiw = None
 
     # Returns the centroid of a target using the specified mode:
     # LARGEST_REGION calculates the centroid of the target by calculating
@@ -107,6 +109,9 @@ class ProtocolOperations():
 
     def destroy(self):
         self._destroy = True
+        if (self._tiw is not None):
+            self._tiw.destroy()
+
         # pyttsx errors out if we try to end a loop that isn't running, so
         # we need to check if we are in a loop first, but the only good
         # way to do this right now is to check an internal flag. This hack

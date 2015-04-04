@@ -14,7 +14,10 @@ class TimerIntervalWindow():
             return
 
         self._notify_interval(min_val, max_val)     
-        self._window.destroy()   
+        self.destroy()           
+
+    def destroy(self):
+        self._window.destroy()
 
     def build_gui(self, parent):
         # Create the main window
