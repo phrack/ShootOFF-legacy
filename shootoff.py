@@ -631,7 +631,7 @@ class MainWindow:
             self.pause_shot_detection(False)
 
             if (self._projector_calibrator.get_projected_bbox() == (0, 0, 0, 0)):
-			    tkMessageBox.showerror("Couldn't Calibrate Projector Arena", 
+                tkMessageBox.showerror("Couldn't Calibrate Projector Arena",
                     "A calibration lock was never achieved for the projector arena. " +
                     "Shots on the arena will not be detected.")
             else:
@@ -874,17 +874,15 @@ class MainWindow:
                                                  name="shot_detection_thread")
             self._shot_detection_thread.start()
         else:
-			tkMessageBox.showwarning(
-            "Open Video Camera",
-            "Cannot open this vidcam (%d)\n" % self._preferences[configurator.VIDCAM]
-			)
+            tkMessageBox.showwarning("Open Video Camera",
+                "Cannot open this vidcam (%d)\n" % self._preferences[configurator.VIDCAM])
 			
-			tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
-			"could not be initialized either because there is no webcam or " +
-			"we cannot connect to it. ShootOFF will shut down.")
-			self._logger.critical("Video capturing could not be initialized either " +
-			"because there is no webcam or we cannot connect to it.")
-			self._shutdown = True
+            tkMessageBox.showerror("Couldn't Connect to Webcam", "Video capturing " +
+                "could not be initialized either because there is no webcam or " +
+                "we cannot connect to it. ShootOFF will shut down.")
+            self._logger.critical("Video capturing could not be initialized either " +
+                "because there is no webcam or we cannot connect to it.")
+            self._shutdown = True
 
     def main(self):
         if not self._shutdown:
