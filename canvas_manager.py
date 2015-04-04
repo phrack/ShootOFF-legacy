@@ -192,28 +192,45 @@ class CanvasManager():
             # The vertical growth direction is reverse with a polygon hack for
             # windows
             if is_polygon:
-                event.widget.scale(region, c[0], c[1], 1, (height+size_incr)/height)
+                scale_factor = (height+size_incr)/height
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], 1, scale_factor)
             elif is_image:
                 height += size_incr
             else:
-                event.widget.scale(region, c[0], c[1], 1, (height-size_incr)/height)
-        elif event.keysym == "Down" and height > 1:
+                if height-size_incr <= 0: return
+                scale_factor = (height-size_incr)/height
+                print height, scale_factor
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], 1, scale_factor)
+        elif event.keysym == "Down":
             if is_polygon:
-                event.widget.scale(region, c[0], c[1], 1, (height-size_incr)/height)
+                if height-size_incr <= 0: return
+                scale_factor = (height-size_incr)/height
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], 1, scale_factor)
             elif is_image:
                 height -= size_incr
             else:
-                event.widget.scale(region, c[0], c[1], 1, (height+size_incr)/height)
+                scale_factor = (height+size_incr)/height
+                print height, scale_factor
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], 1, scale_factor)
         elif event.keysym == "Right":
             if is_image:
                 width += size_incr
             else:            
-                event.widget.scale(region, c[0], c[1], (width+size_incr)/width, 1)
+                scale_factor = (width+size_incr)/width
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], scale_factor, 1)
         elif event.keysym == "Left" and width > 1:
             if is_image:
                 width -= size_incr
             else:       
-                event.widget.scale(region, c[0], c[1], (width-size_incr)/width, 1)
+                if width-size_incr <= 0: return
+                scale_factor = (width-size_incr)/width
+                if (scale_factor > 0): 
+                    event.widget.scale(region, c[0], c[1], scale_factor, 1)
 
         if is_image:
             tags = TagParser.parse_tags(self._canvas.gettags(region))
