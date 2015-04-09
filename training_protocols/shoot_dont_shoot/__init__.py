@@ -35,11 +35,11 @@ class ShootDontShoot(ITrainingProtocol):
 
     def _add_targets(self, target_list, name):
         # Put up between zero and three targets
-        target_count = random.randrange(0, 3)
+        target_count = random.randrange(0, 4)
 
         for i in range(0, target_count):
-            x = random.randrange(0, self._arena_dimensions[0])
-            y = random.randrange(0, self._arena_dimensions[1])
+            x = random.randrange(0, self._arena_dimensions[0] - 100)
+            y = random.randrange(0, self._arena_dimensions[1] - 100)
 
             target_list.append(self._operations.add_projector_target(name, x, y))
 
