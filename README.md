@@ -1,3 +1,5 @@
+The Python version of ShootOFF has been retired. Please visit the repository at https://github.com/phrack/ShootOFF. Note this one is now named ShootOFF-legacy.
+
 ShootOFF
 ========
 
